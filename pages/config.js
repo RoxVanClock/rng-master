@@ -1,14 +1,8 @@
-/**
- * CONFIG.JS - Gestion des profils, thèmes et exports
- */
-
 window.addEventListener('DOMContentLoaded', () => {
     displayProfiles();
-    // Applique le thème global au chargement
     if(window.AppCore) AppCore.applyTheme();
 });
 
-// Création d'un profil
 function addNewProfile() {
     const name = document.getElementById('prof-name').value;
     const game = document.getElementById('prof-game').value;
@@ -16,106 +10,90 @@ function addNewProfile() {
     const sid = document.getElementById('prof-sid').value;
     const isDeadBattery = document.getElementById('prof-dead-battery').checked;
 
-    if (!name || !tid) {
-        alert("Le nom et le TID sont indispensables !");
-        return;
-    }
+    if (!name || !tid) return alert("Nom et TID requis !");
 
     const newProfile = {
         id: Date.now(),
-        name: name,
-        game: game,
-        tid: parseInt(tid),
-        sid: parseInt(sid) || 0,
-        isDeadBattery: isDeadBattery
+        name, game, tid: parseInt(tid), sid: parseInt(sid) || 0, isDeadBattery
     };
 
     let profiles = JSON.parse(localStorage.getItem('rng_profiles') || "[]");
     profiles.push(newProfile);
     localStorage.setItem('rng_profiles', JSON.stringify(profiles));
     
-    // Nettoyage du formulaire
+    // Si c'est le premier profil, on l'active direct
+    if (profiles.length === 1) localStorage.setItem('rng_active_profile', newProfile.id);
+
+    // Reset du formulaire
     document.getElementById('prof-name').value = "";
     document.getElementById('prof-tid').value = "";
     document.getElementById('prof-sid').value = "";
     document.getElementById('prof-dead-battery').checked = false;
-    
+
     displayProfiles();
 }
 
-// Affichage de la liste
 function displayProfiles() {
     const list = document.getElementById('profile-list');
     const profiles = JSON.parse(localStorage.getItem('rng_profiles') || "[]");
-    
+    const activeId = localStorage.getItem('rng_active_profile');
+
     if (profiles.length === 0) {
-        list.innerHTML = "<p style='text-align:center; color:#666;'>Aucun profil créé.</p>";
+        list.innerHTML = "<p style='color:#666; text-align:center;'>Aucun profil.</p>";
         return;
     }
 
-    list.innerHTML = profiles.map(p => `
-        <div style="background:#1a1a1a; padding:15px; border-radius:10px; margin-bottom:12px; border-left: 5px solid var(--game-color, #2ecc71);">
-            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                <div>
-                    <strong style="font-size:1.1rem;">${p.name}</strong><br>
-                    <span style="font-size:0.8rem; color:#aaa;">
-                        ${p.game.toUpperCase()} • ${p.isDeadBattery ? '🪫 Pile Morte' : '🔋 Pile OK'}
-                    </span>
+    list.innerHTML = profiles.map(p => {
+        const isActive = p.id == activeId;
+        return `
+            <div onclick="selectProfile(${p.id})" class="profile-item ${isActive ? 'active' : ''}" 
+                 style="padding:15px; border-radius:10px; margin-bottom:10px; background:#1a1a1a; border:2px solid transparent; cursor:pointer;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <strong style="color:${isActive ? 'var(--game-color)' : '#fff'}">
+                        ${isActive ? '⭐ ' : ''}${p.name}
+                    </strong>
+                    <button onclick="event.stopPropagation(); deleteProfile(${p.id})" style="background:none; border:none; color:#e74c3c; font-size:1.2rem;">🗑️</button>
                 </div>
-                <button onclick="deleteProfile(${p.id})" style="background:none; border:none; color:#e74c3c; font-size:1.2rem; cursor:pointer;">🗑️</button>
+                <div style="font-size:0.8rem; color:#888; margin-top:5px;">
+                    ${p.game.toUpperCase()} | ${p.isDeadBattery ? '🪫 Pile Morte' : '🔋 Pile OK'}<br>
+                    TID: ${p.tid} | SID: ${p.sid}
+                </div>
             </div>
-            <div style="margin-top:8px; font-family:monospace; background:#222; padding:5px; border-radius:5px; font-size:0.9rem;">
-                TID: ${p.tid.toString().padStart(5, '0')} | SID: ${p.sid.toString().padStart(5, '0')}
-            </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
-// Suppression
-function deleteProfile(id) {
-    if(!confirm("Supprimer ce profil définitivement ?")) return;
-    let profiles = JSON.parse(localStorage.getItem('rng_profiles') || "[]");
-    profiles = profiles.filter(p => p.id !== id);
-    localStorage.setItem('rng_profiles', JSON.stringify(profiles));
+function selectProfile(id) {
+    localStorage.setItem('rng_active_profile', id);
     displayProfiles();
 }
 
-// --- SYSTÈME D'EXPORT / IMPORT ---
+function deleteProfile(id) {
+    if(!confirm("Supprimer ce profil ?")) return;
+    let profiles = JSON.parse(localStorage.getItem('rng_profiles') || "[]");
+    profiles = profiles.filter(p => p.id !== id);
+    localStorage.setItem('rng_profiles', JSON.stringify(profiles));
+    if(localStorage.getItem('rng_active_profile') == id) localStorage.removeItem('rng_active_profile');
+    displayProfiles();
+}
 
+// --- EXPORT / IMPORT ---
 function exportProfiles() {
     const data = localStorage.getItem('rng_profiles') || "[]";
-    if(data === "[]") return alert("Aucun profil à exporter.");
-    
     const blob = new Blob([data], {type: "application/json"});
-    const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url;
-    a.download = `rng_backup_${new Date().toLocaleDateString()}.json`;
+    a.href = URL.createObjectURL(blob);
+    a.download = "backup_rng.json";
     a.click();
-    URL.revokeObjectURL(url);
 }
 
-function importProfiles() {
-    document.getElementById('import-file').click();
-}
+function importProfiles() { document.getElementById('import-file').click(); }
 
 function handleFileSelect(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
     const reader = new FileReader();
-    reader.onload = function(e) {
-        try {
-            const content = e.target.result;
-            const parsed = JSON.parse(content);
-            if(!Array.isArray(parsed)) throw new Error();
-            
-            localStorage.setItem('rng_profiles', content);
-            displayProfiles();
-            alert("✅ Profils restaurés avec succès !");
-        } catch (err) {
-            alert("❌ Le fichier sélectionné est invalide.");
-        }
+    reader.onload = (e) => {
+        localStorage.setItem('rng_profiles', e.target.result);
+        displayProfiles();
     };
-    reader.readAsText(file);
+    reader.readAsText(event.target.files[0]);
 }
