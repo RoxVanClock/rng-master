@@ -1,5 +1,5 @@
 /**
- * STYLE-CORE.CSS - Version Intégrale
+ * STYLE-CORE.CSS
  */
 :root {
     --bg: #1a1a1a;
@@ -64,13 +64,6 @@ input, select {
     flex-shrink: 0;
 }
 
-.checkbox-group label {
-    margin: 0;
-    flex: 1;
-    color: #fff;
-    font-size: 1rem;
-}
-
 .btn {
     background: var(--game-color);
     color: white;
@@ -79,14 +72,10 @@ input, select {
     width: 100%;
     border-radius: 10px;
     font-weight: bold;
-    font-size: 1rem;
     cursor: pointer;
-    transition: 0.2s;
 }
 
-.btn:active { transform: scale(0.98); opacity: 0.8; }
-
-/* STYLE DES PROFILS */
+/* STYLE DES PROFILS - AJUSTÉ POUR VOIR TOUTES LES LIGNES */
 .profile-item {
     padding: 15px;
     border-radius: 12px;
@@ -94,13 +83,12 @@ input, select {
     background: #1e1e1e;
     border: 2px solid #333;
     transition: 0.2s;
-    position: relative;
+    min-height: 80px; /* Force la hauteur pour voir le SID */
 }
 
 .profile-item.active {
     border-color: var(--game-color);
     background: #252525;
-    box-shadow: 0 0 10px rgba(46, 204, 113, 0.2);
 }
 
 .action-btn {
@@ -109,10 +97,6 @@ input, select {
     color: white;
     padding: 10px;
     border-radius: 8px;
-    font-size: 1.2rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     width: 45px;
     height: 45px;
     cursor: pointer;
