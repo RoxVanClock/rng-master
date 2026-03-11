@@ -1,12 +1,12 @@
 /**
- * STYLE-CORE.CSS
+ * STYLE-CORE.CSS - Version Couleurs Dynamiques
  */
 :root {
     --bg: #1a1a1a;
     --card: #252525;
     --text: #ffffff;
     --input-bg: #333333;
-    --game-color: #2ecc71;
+    --game-color: #2ecc71; /* Couleur par défaut */
 }
 
 html, body {
@@ -16,6 +16,7 @@ html, body {
     margin: 0;
     padding: 10px;
     -webkit-tap-highlight-color: transparent;
+    transition: background-color 0.3s ease;
 }
 
 .card {
@@ -26,7 +27,11 @@ html, body {
     box-shadow: 0 4px 10px rgba(0,0,0,0.3);
 }
 
-h3 { margin-top: 0; color: var(--game-color); }
+h3 { 
+    margin-top: 0; 
+    color: var(--game-color); 
+    transition: color 0.3s ease;
+}
 
 label {
     display: block;
@@ -73,9 +78,9 @@ input, select {
     border-radius: 10px;
     font-weight: bold;
     cursor: pointer;
+    transition: background-color 0.3s ease;
 }
 
-/* STYLE DES PROFILS - AJUSTÉ POUR VOIR TOUTES LES LIGNES */
 .profile-item {
     padding: 15px;
     border-radius: 12px;
@@ -83,7 +88,7 @@ input, select {
     background: #1e1e1e;
     border: 2px solid #333;
     transition: 0.2s;
-    min-height: 80px; /* Force la hauteur pour voir le SID */
+    min-height: 80px;
 }
 
 .profile-item.active {
