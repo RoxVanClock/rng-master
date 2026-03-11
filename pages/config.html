@@ -4,14 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../style-core.css">
-    <title>Configuration Profil - RNG Master</title>
 </head>
 <body>
     <div class="card">
         <h3>👤 Nouveau Profil</h3>
         
         <label>Nom du profil</label>
-        <input type="text" id="prof-name" placeholder="Ex: Emeraude Shiny Hunt">
+        <input type="text" id="prof-name" placeholder="Ex: Emeraude Shiny">
         
         <label>Jeu GBA</label>
         <select id="prof-game">
@@ -22,40 +21,35 @@
             <option value="lg">Pokémon Vert Feuille</option>
         </select>
 
-        <div class="checkbox-group" style="margin-bottom: 20px;">
-            <label>
-                <input type="checkbox" id="prof-dead-battery"> 🪫 Pile morte / Émeraude (Seed 0)
-            </label>
+        <div class="checkbox-group">
+            <input type="checkbox" id="prof-dead-battery">
+            <label for="prof-dead-battery">🪫 Pile morte / Émeraude (Seed 0)</label>
         </div>
 
         <div style="display: flex; gap: 15px;">
             <div style="flex: 1;">
-                <label>TID (ID Dresseur)</label>
+                <label>TID</label>
                 <input type="number" id="prof-tid" placeholder="12345">
             </div>
             <div style="flex: 1;">
-                <label>SID (ID Secret)</label>
+                <label>SID</label>
                 <input type="number" id="prof-sid" placeholder="54321">
             </div>
         </div>
 
-        <button class="btn" onclick="addNewProfile()">💾 Enregistrer le profil</button>
+        <button class="btn" onclick="addNewProfile()">💾 ENREGISTRER</button>
     </div>
 
     <div class="card">
-        <h3>📂 Profils Enregistrés</h3>
-        <div id="profile-list">
-            </div>
+        <h3>📂 Profils (clique pour choisir)</h3>
+        <div id="profile-list"></div>
     </div>
 
     <div class="card">
-        <h3>🛠️ Gestion des données</h3>
-        <p style="font-size: 0.8rem; color: #888; margin-bottom: 15px;">
-            Sauvegarde tes profils dans un fichier pour ne jamais les perdre.
-        </p>
+        <h3>🛠️ Données</h3>
         <div style="display: flex; gap: 10px;">
-            <button class="btn" onclick="exportProfiles()" style="background: #444; flex: 1;">📤 Export</button>
-            <button class="btn" onclick="importProfiles()" style="background: #444; flex: 1;">📥 Import</button>
+            <button class="btn" onclick="exportProfiles()" style="background: #444; flex: 1;">EXPORT</button>
+            <button class="btn" onclick="importProfiles()" style="background: #444; flex: 1;">IMPORT</button>
         </div>
         <input type="file" id="import-file" style="display:none" onchange="handleFileSelect(event)">
     </div>
