@@ -1,5 +1,5 @@
 /**
- * CONFIG.JS - Version Ultra-Robuste (Basée sur l'Index)
+ * CONFIG.JS - Version avec TID + SID affichés
  */
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -20,15 +20,16 @@ function saveProfile() {
     let profiles = JSON.parse(localStorage.getItem('rng_profiles') || "[]");
 
     const profileData = { 
-        id: Date.now().toString(), // On regénère un ID propre
-        name, game, tid: parseInt(tid), sid: parseInt(sid) || 0, isDeadBattery 
+        id: Date.now().toString(),
+        name, game, 
+        tid: parseInt(tid), 
+        sid: parseInt(sid) || 0, 
+        isDeadBattery 
     };
 
     if (index > -1 && profiles[index]) {
-        // Mode Edition : On remplace à la position précise
         profiles[index] = profileData;
     } else {
-        // Nouveau profil
         profiles.push(profileData);
         if (profiles.length === 1) localStorage.setItem('rng_active_profile', profileData.id);
     }
@@ -46,12 +47,17 @@ function displayProfiles() {
     const profiles = JSON.parse(localStorage.getItem('rng_profiles') || "[]");
     const activeId = localStorage.getItem('rng_active_profile');
 
-    // Affichage Actif
+    // Mise à jour de l'affichage du profil actif
     const activeProfile = profiles.find(p => p.id == activeId);
     if (activeProfile) {
         activeBox.style.display = "block";
-        activeInfo.innerHTML = `<strong>${activeProfile.name}</strong>`;
-    } else { activeBox.style.display = "none"; }
+        activeInfo.innerHTML = `
+            <strong>${activeProfile.name}</strong><br>
+            <small style="color:#aaa;">${activeProfile.game.toUpperCase()} | TID: ${activeProfile.tid} SID: ${activeProfile.sid}</small>
+        `;
+    } else {
+        activeBox.style.display = "none";
+    }
 
     if (profiles.length === 0) {
         list.innerHTML = "<p style='text-align:center; color:#666;'>Aucun profil.</p>";
@@ -64,8 +70,11 @@ function displayProfiles() {
             <div onclick="selectProfile('${p.id}')" class="profile-item ${isActive ? 'active' : ''}">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <div style="flex:1;">
-                        <strong>${p.name}</strong><br>
-                        <small>TID: ${p.tid}</small>
+                        <strong style="color:${isActive ? 'var(--game-color)' : '#fff'}">${p.name}</strong><br>
+                        <span style="font-size:0.85rem; color:#888;">
+                            TID: ${p.tid.toString().padStart(5, '0')} | SID: ${p.sid.toString().padStart(5, '0')}<br>
+                            ${p.game.toUpperCase()} | ${p.isDeadBattery ? '🪫 Pile Morte' : '🔋 Pile OK'}
+                        </span>
                     </div>
                     <div style="display:flex; gap:10px;">
                         <button class="action-btn" onclick="handleEdit(event, ${i})" style="color:#3498db;">✏️</button>
@@ -79,6 +88,7 @@ function displayProfiles() {
 
 function selectProfile(id) {
     localStorage.setItem('rng_active_profile', id);
+    if (navigator.vibrate) navigator.vibrate(15);
     displayProfiles();
 }
 
@@ -102,10 +112,15 @@ function handleEdit(event, index) {
 
 function handleDelete(event, index) {
     event.stopPropagation();
-    if(!confirm("Supprimer ?")) return;
+    if(!confirm("Supprimer ce profil ?")) return;
     let profiles = JSON.parse(localStorage.getItem('rng_profiles') || "[]");
+    const deletedId = profiles[index].id;
     profiles.splice(index, 1);
     localStorage.setItem('rng_profiles', JSON.stringify(profiles));
+    
+    if(localStorage.getItem('rng_active_profile') == deletedId) {
+        localStorage.removeItem('rng_active_profile');
+    }
     displayProfiles();
 }
 
@@ -124,7 +139,6 @@ function handleFileSelect(event) {
     reader.onload = (e) => {
         try {
             const data = JSON.parse(e.target.result);
-            // On force une nouvelle structure propre pour chaque profil importé
             const cleaned = data.map(p => ({
                 id: Math.random().toString(36).substr(2, 9),
                 name: p.name || "Importé",
@@ -148,4 +162,5 @@ function exportProfiles() {
     a.download = "rng_profiles.json";
     a.click();
 }
+
 function importProfiles() { document.getElementById('import-file').click(); }
