@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuration - RNG Master</title>
+    <link rel="stylesheet" href="../style-core.css">
+</head>
+<body>
+
+    <div class="card">
+        <h3>👤 Nouveau Profil</h3>
+        <label>Nom du profil</label>
+        <input type="text" id="prof-name" placeholder="Ex: Emeraude Shiny Hunt">
+        
+        <label>Jeu GBA</label>
+        <select id="prof-game">
+            <option value="emerald">Pokémon Émeraude</option>
+            <option value="ruby">Pokémon Rubis</option>
+            <option value="sapphire">Pokémon Saphir</option>
+            <option value="fr">Pokémon Rouge Feu</option>
+            <option value="lg">Pokémon Vert Feuille</option>
+        </select>
+
+        <div style="display: flex; gap: 10px;">
+            <div style="flex:1;">
+                <label>TID</label>
+                <input type="number" id="prof-tid" placeholder="12345">
+            </div>
+            <div style="flex:1;">
+                <label>SID</label>
+                <input type="number" id="prof-sid" placeholder="54321">
+            </div>
+        </div>
+
+        <button class="btn" onclick="addNewProfile()" style="margin-top: 15px;">💾 ENREGISTRER</button>
+    </div>
+
+    <div class="card">
+        <h3>📂 Profils Enregistrés</h3>
+        <div id="profile-list">
+            </div>
+    </div>
+
+    <script src="../app-core.js"></script>
+    <script src="config.js"></script>
+</body>
+</html>

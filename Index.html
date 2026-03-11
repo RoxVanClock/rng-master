@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RNG Master Pro</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="style-core.css">
+    <style>
+        /* On cache les scrollbars sur le parent pour un look appli propre */
+        body { overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
+        
+        /* L'iframe prend tout l'espace disponible au-dessus de la nav */
+        #content-frame {
+            flex-grow: 1;
+            width: 100%;
+            border: none;
+            background: var(--bg);
+        }
+
+        /* Barre de navigation fixe en bas */
+        .nav-bar {
+            height: 70px;
+            background: var(--tab-bg);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .nav-item {
+            color: var(--text);
+            text-decoration: none;
+            font-size: 0.8rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            opacity: 0.5;
+            transition: 0.2s;
+        }
+
+        .nav-item.active {
+            opacity: 1;
+            color: var(--game-color);
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <iframe src="pages/chrono.html" id="content-frame" name="content-frame"></iframe>
+
+    <nav class="nav-bar">
+        <a href="pages/config.html" target="content-frame" class="nav-item" onclick="setActive(this)">
+            <span>⚙️</span> Config
+        </a>
+        <a href="pages/search.html" target="content-frame" class="nav-item" onclick="setActive(this)">
+            <span>🔍</span> Chercher
+        </a>
+        <a href="pages/chrono.html" target="content-frame" class="nav-item active" onclick="setActive(this)">
+            <span>⏱️</span> Chrono
+        </a>
+    </nav>
+
+    <script>
+        /**
+         * Gère le changement de style des onglets au clic
+         */
+        function setActive(el) {
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        /**
+         * Enregistrement du Service Worker pour le mode hors-ligne
+         */
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then(reg => console.log('PWA prête !'))
+                    .catch(err => console.log('Erreur PWA:', err));
+            });
+        }
+    </script>
+</body>
+</html>
