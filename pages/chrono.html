@@ -6,23 +6,31 @@
     <link rel="stylesheet" href="../style-core.css">
     <style>
         .timer-display {
-            font-size: 4rem;
+            font-size: 4.5rem;
             text-align: center;
-            font-family: monospace;
+            font-family: 'Courier New', monospace;
             margin: 20px 0;
             color: var(--game-color);
+            font-weight: bold;
         }
         .grid-inputs {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
+            gap: 12px;
+        }
+        #phase-label {
+            text-align: center;
+            font-weight: bold;
+            letter-spacing: 1px;
+            height: 1.2rem;
+            margin-bottom: 5px;
         }
     </style>
 </head>
 <body>
     <div class="card">
+        <div id="phase-label" style="color: #888;">PRÊT</div>
         <div class="timer-display" id="timer-val">0.00</div>
-        <div id="phase-label" style="text-align: center; color: #888; font-weight: bold;">PRÊT</div>
     </div>
 
     <div class="card">
@@ -30,25 +38,26 @@
         <div class="grid-inputs">
             <div>
                 <label>Pre-Timer (ms)</label>
-                <input type="number" id="pre-timer" value="0">
+                <input type="number" id="pre-timer" value="0" placeholder="0">
             </div>
             <div>
                 <label>Calibration (ms)</label>
-                <input type="number" id="calibration" value="0" step="1">
+                <input type="number" id="calibration" value="0" placeholder="0">
             </div>
         </div>
         
         <label>Target Frame</label>
         <input type="number" id="target-frame" value="1000">
 
-        <button class="btn" id="start-btn" onclick="toggleTimer()">DÉMARRER</button>
+        <button class="btn" id="start-btn" onclick="window.toggleTimer()">DÉMARRER</button>
     </div>
 
     <div class="card">
         <h3>🎯 Calibration</h3>
         <label>Frame Hit (le cadre obtenu)</label>
         <input type="number" id="frame-hit" placeholder="Ex: 1002">
-        <button class="btn" style="background: #444; margin-top: 10px;" onclick="updateCalibration()">🔄 UPDATE CALIBRATION</button>
+        
+        <button class="btn" style="background: #444; margin-top: 10px;" onclick="window.updateCalibration()">🔄 UPDATE CALIBRATION</button>
     </div>
 
     <script src="../app-core.js"></script>
