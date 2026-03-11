@@ -6,10 +6,9 @@
     <link rel="stylesheet" href="../style-core.css">
 </head>
 <body>
-    <div class="card">
-        <h3>👤 Nouveau Profil</h3>
-        
-        <label>Nom du profil</label>
+    <div class="card" id="form-card">
+        <h3 id="form-title">👤 Nouveau Profil</h3>
+        <input type="hidden" id="edit-id"> <label>Nom du profil</label>
         <input type="text" id="prof-name" placeholder="Ex: Emeraude Shiny">
         
         <label>Jeu GBA</label>
@@ -37,12 +36,18 @@
             </div>
         </div>
 
-        <button class="btn" onclick="addNewProfile()">💾 ENREGISTRER LE PROFIL</button>
+        <div id="form-buttons">
+            <button class="btn" id="save-btn" onclick="saveProfile()">💾 ENREGISTRER LE PROFIL</button>
+        </div>
+    </div>
+
+    <div class="card" id="active-profile-display" style="display:none; border: 2px solid var(--game-color); background: rgba(46, 204, 113, 0.1);">
+        <h3 style="font-size: 0.9rem; margin-bottom: 10px;">⭐ PROFIL ACTIF</h3>
+        <div id="active-info"></div>
     </div>
 
     <div class="card">
-        <h3>📂 Tes Profils</h3>
-        <p style="font-size: 0.8rem; color: #888; margin-bottom: 15px;">Touche un profil pour l'activer.</p>
+        <h3>📂 Liste des Profils</h3>
         <div id="profile-list"></div>
     </div>
 
