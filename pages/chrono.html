@@ -11,7 +11,6 @@
             font-family: monospace;
             margin: 20px 0;
             color: var(--game-color);
-            text-shadow: 0 0 15px rgba(0,0,0,0.5);
         }
         .grid-inputs {
             display: grid;
@@ -23,7 +22,7 @@
 <body>
     <div class="card">
         <div class="timer-display" id="timer-val">0.00</div>
-        <div id="phase-label" style="text-align: center; color: #888; margin-bottom: 10px;">PRÊT</div>
+        <div id="phase-label" style="text-align: center; color: #888; font-weight: bold;">PRÊT</div>
     </div>
 
     <div class="card">
@@ -35,7 +34,7 @@
             </div>
             <div>
                 <label>Calibration (ms)</label>
-                <input type="number" id="calibration" value="0" step="0.01">
+                <input type="number" id="calibration" value="0" step="1">
             </div>
         </div>
         
@@ -49,7 +48,7 @@
         <h3>🎯 Calibration</h3>
         <label>Frame Hit (le cadre obtenu)</label>
         <input type="number" id="frame-hit" placeholder="Ex: 1002">
-        <button class="btn" style="background: #444;" onclick="updateCalibration()">🔄 UPDATE CALIBRATION</button>
+        <button class="btn" style="background: #444; margin-top: 10px;" onclick="updateCalibration()">🔄 UPDATE CALIBRATION</button>
     </div>
 
     <script src="../app-core.js"></script>
