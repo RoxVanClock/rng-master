@@ -1,5 +1,5 @@
 /**
- * STYLE-CORE.CSS - Version Intégrale
+ * STYLE-CORE.CSS - Version Corrigée
  */
 :root {
     --bg: #1a1a1a;
@@ -85,7 +85,7 @@ input, select {
 
 .btn:active { transform: scale(0.98); opacity: 0.8; }
 
-/* STYLE DES PROFILS DANS LA LISTE */
+/* STYLE DES PROFILS */
 .profile-item {
     padding: 15px;
     border-radius: 12px;
@@ -93,12 +93,27 @@ input, select {
     background: #1e1e1e;
     border: 2px solid #333;
     transition: 0.2s;
-    -webkit-user-select: none;
-    user-select: none;
+    position: relative;
+    overflow: hidden;
 }
 
 .profile-item.active {
     border-color: var(--game-color);
     background: #252525;
     box-shadow: 0 0 10px rgba(46, 204, 113, 0.2);
+}
+
+.action-btn {
+    background: #333;
+    border: none;
+    color: white;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 45px;
+    height: 45px;
+    cursor: pointer;
 }
