@@ -1,5 +1,5 @@
 /**
- * STYLE-CORE.CSS - Version Couleurs Contrastées
+ * STYLE-CORE.CSS - Version Couleurs Harmonisées
  */
 :root {
     --bg: #1a1a1a;
@@ -16,7 +16,7 @@ html, body {
     margin: 0;
     padding: 10px;
     -webkit-tap-highlight-color: transparent;
-    transition: background-color 0.3s ease;
+    transition: all 0.3s ease;
 }
 
 .card {
