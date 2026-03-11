@@ -5,10 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="stylesheet" href="../style-core.css">
     <style>
-        .timer-display { font-size: 4rem; text-align: center; font-family: monospace; margin: 10px 0; color: var(--game-color); }
+        .timer-display { font-size: 4.5rem; text-align: center; font-family: monospace; margin: 10px 0; color: var(--game-color); font-weight: bold; }
         .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .stats-row { display: flex; justify-content: space-around; margin-bottom: 15px; color: #888; font-size: 0.9rem; }
-        .stat-val { color: var(--game-color); font-weight: bold; }
+        .stats-row { display: flex; justify-content: space-around; align-items: center; margin-bottom: 15px; color: #888; font-size: 0.9rem; background: rgba(0,0,0,0.2); padding: 5px; border-radius: 8px; }
+        .stat-val { color: var(--game-color); font-weight: bold; font-size: 1.1rem; }
+        #phase-label { text-transform: uppercase; letter-spacing: 1px; }
     </style>
 </head>
 <body>
@@ -44,15 +45,23 @@
             </div>
         </div>
 
-        <div class="checkbox-group" style="margin-top:10px; padding:10px;">
-            <input type="checkbox" id="enable-vibrate" checked>
-            <label for="enable-vibrate">📳 Vibrations</label>
-            <input type="checkbox" id="enable-sound" style="margin-left:20px;">
-            <label for="enable-sound">🔊 Bips</label>
+        <div class="grid-inputs">
+            <div>
+                <label>Bips fin (s)</label>
+                <input type="number" id="beep-count" value="2" min="0" max="10">
+            </div>
+            <div style="display:flex; flex-direction: column; justify-content: flex-end;">
+                <div class="checkbox-group" style="margin:0; padding:10px; height:45px; box-sizing:border-box;">
+                    <input type="checkbox" id="enable-vibrate" checked style="width:20px!important;">
+                    <label for="enable-vibrate">📳</label>
+                    <input type="checkbox" id="enable-sound" checked style="width:20px!important; margin-left:10px;">
+                    <label for="enable-sound">🔊</label>
+                </div>
+            </div>
         </div>
 
-        <button class="btn" id="start-btn" onclick="window.toggleTimer()">DÉMARRER</button>
-        <button class="btn" style="background:#444; margin-top:10px;" onclick="window.resetCounter()">RÉINITIALISER COMPTEUR</button>
+        <button class="btn" id="start-btn" onclick="window.toggleTimer()" style="margin-top:15px;">DÉMARRER</button>
+        <button class="btn" style="background:#444; margin-top:10px; padding:10px;" onclick="window.resetCounter()">RÉINITIALISER COMPTEUR</button>
     </div>
 
     <div class="card">
