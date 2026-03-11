@@ -1,12 +1,12 @@
 /**
- * STYLE-CORE.CSS - Version Couleurs Dynamiques
+ * STYLE-CORE.CSS - Version Intégrale
  */
 :root {
     --bg: #1a1a1a;
     --card: #252525;
     --text: #ffffff;
     --input-bg: #333333;
-    --game-color: #2ecc71; /* Couleur par défaut */
+    --game-color: #2ecc71; /* Couleur dynamique */
 }
 
 html, body {
@@ -81,6 +81,9 @@ input, select {
     transition: background-color 0.3s ease;
 }
 
+.btn:active { transform: scale(0.98); }
+
+/* STYLE DES PROFILS DANS LA LISTE */
 .profile-item {
     padding: 15px;
     border-radius: 12px;
@@ -89,11 +92,13 @@ input, select {
     border: 2px solid #333;
     transition: 0.2s;
     min-height: 80px;
+    position: relative;
 }
 
 .profile-item.active {
     border-color: var(--game-color);
     background: #252525;
+    box-shadow: 0 0 10px rgba(46, 204, 113, 0.1);
 }
 
 .action-btn {
@@ -105,4 +110,7 @@ input, select {
     width: 45px;
     height: 45px;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
