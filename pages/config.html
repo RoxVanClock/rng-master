@@ -8,10 +8,10 @@
 <body>
     <div class="card" id="form-card">
         <h3 id="form-title">👤 Nouveau Profil</h3>
-        <input type="hidden" id="edit-id" value=""> 
+        <input type="hidden" id="edit-index" value="-1"> 
         
         <label>Nom du profil</label>
-        <input type="text" id="prof-name" placeholder="Ex: Emeraude Shiny">
+        <input type="text" id="prof-name">
         
         <label>Jeu GBA</label>
         <select id="prof-game">
@@ -30,18 +30,18 @@
         <div style="display: flex; gap: 15px;">
             <div style="flex: 1;">
                 <label>TID</label>
-                <input type="number" id="prof-tid" placeholder="12345">
+                <input type="number" id="prof-tid">
             </div>
             <div style="flex: 1;">
                 <label>SID</label>
-                <input type="number" id="prof-sid" placeholder="54321">
+                <input type="number" id="prof-sid">
             </div>
         </div>
 
         <button class="btn" id="save-btn" onclick="saveProfile()">💾 ENREGISTRER LE PROFIL</button>
     </div>
 
-    <div class="card" id="active-profile-display" style="display:none; border: 2px solid var(--game-color); background: rgba(46, 204, 113, 0.1);">
+    <div class="card" id="active-profile-display" style="display:none; border: 2px solid var(--game-color);">
         <h3 style="font-size: 0.9rem; margin-bottom: 5px;">⭐ PROFIL ACTIF</h3>
         <div id="active-info"></div>
     </div>
