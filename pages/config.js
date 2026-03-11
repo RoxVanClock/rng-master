@@ -1,5 +1,5 @@
 /**
- * CONFIG.JS - Version avec TID + SID affichés
+ * CONFIG.JS - Version Fix SID Visible
  */
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -23,7 +23,7 @@ function saveProfile() {
         id: Date.now().toString(),
         name, game, 
         tid: parseInt(tid), 
-        sid: parseInt(sid) || 0, 
+        sid: (sid === "" || sid === null) ? 0 : parseInt(sid), 
         isDeadBattery 
     };
 
@@ -47,14 +47,11 @@ function displayProfiles() {
     const profiles = JSON.parse(localStorage.getItem('rng_profiles') || "[]");
     const activeId = localStorage.getItem('rng_active_profile');
 
-    // Mise à jour de l'affichage du profil actif
     const activeProfile = profiles.find(p => p.id == activeId);
     if (activeProfile) {
         activeBox.style.display = "block";
-        activeInfo.innerHTML = `
-            <strong>${activeProfile.name}</strong><br>
-            <small style="color:#aaa;">${activeProfile.game.toUpperCase()} | TID: ${activeProfile.tid} SID: ${activeProfile.sid}</small>
-        `;
+        const s = activeProfile.sid !== undefined ? activeProfile.sid : 0;
+        activeInfo.innerHTML = `<strong>${activeProfile.name}</strong><br><small>TID: ${activeProfile.tid} | SID: ${s}</small>`;
     } else {
         activeBox.style.display = "none";
     }
@@ -66,15 +63,21 @@ function displayProfiles() {
 
     list.innerHTML = profiles.map((p, i) => {
         const isActive = (p.id == activeId);
+        // On sécurise l'affichage du SID
+        const sidDisplay = (p.sid !== undefined && p.sid !== null) ? p.sid.toString().padStart(5, '0') : "00000";
+        const tidDisplay = p.tid.toString().padStart(5, '0');
+
         return `
             <div onclick="selectProfile('${p.id}')" class="profile-item ${isActive ? 'active' : ''}">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div style="flex:1;">
-                        <strong style="color:${isActive ? 'var(--game-color)' : '#fff'}">${p.name}</strong><br>
-                        <span style="font-size:0.85rem; color:#888;">
-                            TID: ${p.tid.toString().padStart(5, '0')} | SID: ${p.sid.toString().padStart(5, '0')}<br>
+                    <div style="flex:1; line-height: 1.4;">
+                        <strong style="color:${isActive ? 'var(--game-color)' : '#fff'}; display:block; margin-bottom:4px;">${p.name}</strong>
+                        <div style="font-size:0.85rem; color:#bbb;">
+                            TID: ${tidDisplay} | SID: ${sidDisplay}
+                        </div>
+                        <div style="font-size:0.75rem; color:#888;">
                             ${p.game.toUpperCase()} | ${p.isDeadBattery ? '🪫 Pile Morte' : '🔋 Pile OK'}
-                        </span>
+                        </div>
                     </div>
                     <div style="display:flex; gap:10px;">
                         <button class="action-btn" onclick="handleEdit(event, ${i})" style="color:#3498db;">✏️</button>
@@ -88,7 +91,6 @@ function displayProfiles() {
 
 function selectProfile(id) {
     localStorage.setItem('rng_active_profile', id);
-    if (navigator.vibrate) navigator.vibrate(15);
     displayProfiles();
 }
 
@@ -102,7 +104,7 @@ function handleEdit(event, index) {
     document.getElementById('prof-name').value = p.name;
     document.getElementById('prof-game').value = p.game;
     document.getElementById('prof-tid').value = p.tid;
-    document.getElementById('prof-sid').value = p.sid;
+    document.getElementById('prof-sid').value = p.sid || 0;
     document.getElementById('prof-dead-battery').checked = p.isDeadBattery;
 
     document.getElementById('form-title').innerText = "✏️ Modifier Profil";
@@ -112,15 +114,10 @@ function handleEdit(event, index) {
 
 function handleDelete(event, index) {
     event.stopPropagation();
-    if(!confirm("Supprimer ce profil ?")) return;
+    if(!confirm("Supprimer ?")) return;
     let profiles = JSON.parse(localStorage.getItem('rng_profiles') || "[]");
-    const deletedId = profiles[index].id;
     profiles.splice(index, 1);
     localStorage.setItem('rng_profiles', JSON.stringify(profiles));
-    
-    if(localStorage.getItem('rng_active_profile') == deletedId) {
-        localStorage.removeItem('rng_active_profile');
-    }
     displayProfiles();
 }
 
@@ -149,7 +146,7 @@ function handleFileSelect(event) {
             }));
             localStorage.setItem('rng_profiles', JSON.stringify(cleaned));
             location.reload(); 
-        } catch(err) { alert("Fichier JSON corrompu"); }
+        } catch(err) { alert("Erreur fichier"); }
     };
     reader.readAsText(event.target.files[0]);
 }
@@ -162,5 +159,4 @@ function exportProfiles() {
     a.download = "rng_profiles.json";
     a.click();
 }
-
 function importProfiles() { document.getElementById('import-file').click(); }
