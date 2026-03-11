@@ -2,7 +2,7 @@
  * APP-CORE.JS - Le Cerveau du Style
  */
 const AppCore = {
-    // Cette fonction sera appelée par config.js
+    // Cette fonction met à jour la couleur partout
     updateGlobalTheme: function(color) {
         if (!color) color = localStorage.getItem('rng_theme_color') || '#2ecc71';
         document.documentElement.style.setProperty('--game-color', color);
