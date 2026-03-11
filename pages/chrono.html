@@ -5,59 +5,61 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="stylesheet" href="../style-core.css">
     <style>
-        .timer-display {
-            font-size: 4.5rem;
-            text-align: center;
-            font-family: 'Courier New', monospace;
-            margin: 20px 0;
-            color: var(--game-color);
-            font-weight: bold;
-        }
-        .grid-inputs {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-        #phase-label {
-            text-align: center;
-            font-weight: bold;
-            letter-spacing: 1px;
-            height: 1.2rem;
-            margin-bottom: 5px;
-        }
+        .timer-display { font-size: 4rem; text-align: center; font-family: monospace; margin: 10px 0; color: var(--game-color); }
+        .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .stats-row { display: flex; justify-content: space-around; margin-bottom: 15px; color: #888; font-size: 0.9rem; }
+        .stat-val { color: var(--game-color); font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="card">
-        <div id="phase-label" style="color: #888;">PRÊT</div>
+        <div class="stats-row">
+            <div>PHASE: <span id="count-val" class="stat-val">0</span></div>
+            <div id="phase-label">PRÊT</div>
+        </div>
         <div class="timer-display" id="timer-val">0.00</div>
     </div>
 
     <div class="card">
-        <h3>⏱️ Réglages Timer</h3>
+        <h3>⏱️ Configuration</h3>
         <div class="grid-inputs">
             <div>
                 <label>Pre-Timer (ms)</label>
-                <input type="number" id="pre-timer" value="0" placeholder="0">
+                <input type="number" id="pre-timer" value="0">
             </div>
             <div>
                 <label>Calibration (ms)</label>
-                <input type="number" id="calibration" value="0" placeholder="0">
+                <input type="number" id="calibration" value="0">
             </div>
         </div>
         
-        <label>Target Frame</label>
-        <input type="number" id="target-frame" value="1000">
+        <div class="grid-inputs">
+            <div>
+                <label>Target Frame</label>
+                <input type="number" id="target-frame" value="1000">
+            </div>
+            <div>
+                <label>Intervalle (s)</label>
+                <input type="number" id="interval-val" value="0" step="0.1">
+            </div>
+        </div>
+
+        <div class="checkbox-group" style="margin-top:10px; padding:10px;">
+            <input type="checkbox" id="enable-vibrate" checked>
+            <label for="enable-vibrate">📳 Vibrations</label>
+            <input type="checkbox" id="enable-sound" style="margin-left:20px;">
+            <label for="enable-sound">🔊 Bips</label>
+        </div>
 
         <button class="btn" id="start-btn" onclick="window.toggleTimer()">DÉMARRER</button>
+        <button class="btn" style="background:#444; margin-top:10px;" onclick="window.resetCounter()">RÉINITIALISER COMPTEUR</button>
     </div>
 
     <div class="card">
         <h3>🎯 Calibration</h3>
-        <label>Frame Hit (le cadre obtenu)</label>
+        <label>Frame Hit</label>
         <input type="number" id="frame-hit" placeholder="Ex: 1002">
-        
-        <button class="btn" style="background: #444; margin-top: 10px;" onclick="window.updateCalibration()">🔄 UPDATE CALIBRATION</button>
+        <button class="btn" style="background: #333;" onclick="window.updateCalibration()">🔄 UPDATE CALIBRATION</button>
     </div>
 
     <script src="../app-core.js"></script>
