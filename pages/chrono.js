@@ -1,5 +1,5 @@
 /**
- * CHRONO.JS - Version Totale (Pre-Timer, Calibration, Intervalle, Feedback)
+ * CHRONO.JS - Version Finale (Bips personnalisables)
  */
 
 (function() {
@@ -8,18 +8,22 @@
     let endTime = 0;
     let currentPhase = "idle";
     let counter = 0;
+    let lastBeepSecond = -1;
     const FPS_GBA = 59.7275;
 
-    // Audio Context pour les bips (plus fiable sur mobile)
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    function beep(freq = 440, duration = 100) {
+    function beep(freq, duration) {
         if (!document.getElementById('enable-sound').checked) return;
+        if (audioCtx.state === 'suspended') audioCtx.resume();
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
+        osc.type = 'square';
         osc.connect(gain);
         gain.connect(audioCtx.destination);
         osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
         osc.start();
+        gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration/1000);
         setTimeout(() => osc.stop(), duration);
     }
 
@@ -34,6 +38,7 @@
 
     function startTimer() {
         isRunning = true;
+        lastBeepSecond = -1;
         document.getElementById('start-btn').innerText = "STOP";
         document.getElementById('start-btn').style.background = "#e74c3c";
         
@@ -43,7 +48,8 @@
 
     function runPhase(phase, duration) {
         currentPhase = phase;
-        document.getElementById('phase-label').innerText = phase === "pretimer" ? "PRE-TIMER" : "TARGET";
+        lastBeepSecond = -1;
+        document.getElementById('phase-label').innerText = phase;
         endTime = Date.now() + duration;
         updateDisplay();
     }
@@ -65,6 +71,15 @@
             return;
         }
 
+        // --- LOGIQUE DES BIPS PERSONNALISABLES ---
+        const beepThreshold = parseInt(document.getElementById('beep-count').value) || 0;
+        const currentSecond = Math.ceil(remaining / 1000);
+        
+        if (currentSecond <= beepThreshold && currentSecond !== lastBeepSecond) {
+            lastBeepSecond = currentSecond;
+            beep(440, 50); 
+        }
+
         document.getElementById('timer-val').innerText = (remaining / 1000).toFixed(2);
         timerTimeout = requestAnimationFrame(updateDisplay);
     }
@@ -73,25 +88,26 @@
         const vibrate = document.getElementById('enable-vibrate').checked;
         
         if (currentPhase === "pretimer") {
-            if (vibrate && navigator.vibrate) navigator.vibrate(50);
-            beep(660, 100);
+            if (vibrate) navigator.vibrate(100);
+            beep(880, 150);
             startTargetPhase();
-        } else {
-            // Fin Target
+        } 
+        else if (currentPhase === "target") {
             counter++;
             document.getElementById('count-val').innerText = counter;
-            if (vibrate && navigator.vibrate) navigator.vibrate([100, 50, 100]);
-            beep(880, 200);
+            if (vibrate) navigator.vibrate([150, 50, 150]);
+            beep(1200, 200);
 
-            const interval = parseFloat(document.getElementById('interval-val').value) || 0;
-            if (interval > 0) {
-                runPhase("interval", interval * 1000);
-                // On boucle sur la target après l'intervalle
-                setTimeout(() => { if(isRunning) startTargetPhase(); }, interval * 1000);
+            const intervalS = parseFloat(document.getElementById('interval-val').value) || 0;
+            if (intervalS > 0) {
+                runPhase("interval", intervalS * 1000);
             } else {
                 stopTimer();
                 document.getElementById('timer-val').innerText = "0.00";
             }
+        }
+        else if (currentPhase === "interval") {
+            startTargetPhase();
         }
     }
 
@@ -108,9 +124,10 @@
         const hit = parseInt(document.getElementById('frame-hit').value);
         const currentCalib = parseFloat(document.getElementById('calibration').value) || 0;
         if (!hit) return alert("Entre ta frame hit !");
-
         const newCalib = currentCalib + ((target - hit) / FPS_GBA * 1000);
         document.getElementById('calibration').value = Math.round(newCalib);
-        beep(550, 50);
+        const input = document.getElementById('calibration');
+        input.style.borderColor = "var(--game-color)";
+        setTimeout(() => input.style.borderColor = "", 500);
     };
 })();
