@@ -1,12 +1,11 @@
 /**
- * CHRONO.JS - Logique de précision type EonTimer
+ * CHRONO.JS - Version Corrigée
  */
 
-let timerInterval = null;
 let isRunning = false;
-let startTime = 0;
-let targetTime = 0;
-let phase = "idle"; // idle, pretimer, target
+let timerTimeout = null;
+let endTime = 0;
+let currentPhase = "idle"; // pretimer ou target
 
 function toggleTimer() {
     if (isRunning) {
@@ -18,88 +17,86 @@ function toggleTimer() {
 
 function startTimer() {
     const preTimerMs = parseFloat(document.getElementById('pre-timer').value) || 0;
-    const calibrationMs = parseFloat(document.getElementById('calibration').value) || 0;
-    const targetFrame = parseInt(document.getElementById('target-frame').value) || 0;
-
-    // Calcul du temps de la target : (Frames / 59.7275 FPS) * 1000 + Calibration
-    // On utilise 59.7275 pour la précision GBA
-    const targetFrameMs = (targetFrame / 59.7275) * 1000;
     
     isRunning = true;
     document.getElementById('start-btn').innerText = "STOP";
     document.getElementById('start-btn').style.background = "#e74c3c";
 
-    startTime = performance.now();
-    
     if (preTimerMs > 0) {
-        phase = "pretimer";
-        document.getElementById('phase-label').innerText = "PRE-TIMER...";
-        targetTime = preTimerMs;
+        runPhase("pretimer", preTimerMs);
     } else {
-        phase = "target";
-        document.getElementById('phase-label').innerText = "TARGET FRAME...";
-        targetTime = targetFrameMs + calibrationMs;
+        startTargetPhase();
     }
-
-    timerInterval = requestAnimationFrame(updateUI);
 }
 
-function updateUI() {
+function runPhase(phase, duration) {
+    currentPhase = phase;
+    document.getElementById('phase-label').innerText = phase === "pretimer" ? "⚡ PRE-TIMER..." : "🎯 TARGET FRAME...";
+    
+    endTime = Date.now() + duration;
+    updateDisplay();
+}
+
+function startTargetPhase() {
+    const calib = parseFloat(document.getElementById('calibration').value) || 0;
+    const targetFrame = parseInt(document.getElementById('target-frame').value) || 0;
+    // Conversion Frame -> MS (59.7275 fps pour GBA)
+    const duration = (targetFrame / 59.7275 * 1000) + calib;
+    
+    runPhase("target", duration);
+}
+
+function updateDisplay() {
     if (!isRunning) return;
 
-    const now = performance.now();
-    const elapsed = now - startTime;
-    const remaining = targetTime - elapsed;
+    const now = Date.now();
+    const remaining = endTime - now;
 
     if (remaining <= 0) {
-        if (phase === "pretimer") {
-            // Passage du Pre-timer à la Target Frame
-            if (navigator.vibrate) navigator.vibrate([50]); // Petit bip/vibreur
-            phase = "target";
-            document.getElementById('phase-label').innerText = "TARGET FRAME...";
-            const calibrationMs = parseFloat(document.getElementById('calibration').value) || 0;
-            const targetFrame = parseInt(document.getElementById('target-frame').value) || 0;
-            targetTime = (targetFrame / 59.7275) * 1000 + calibrationMs;
-            startTime = performance.now();
-            timerInterval = requestAnimationFrame(updateUI);
+        if (currentPhase === "pretimer") {
+            if (navigator.vibrate) navigator.vibrate(50);
+            startTargetPhase();
         } else {
-            // Fin du timer
             document.getElementById('timer-val').innerText = "0.00";
             document.getElementById('phase-label').innerText = "TERMINÉ !";
-            if (navigator.vibrate) navigator.vibrate(200);
+            if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
             stopTimer();
         }
         return;
     }
 
     document.getElementById('timer-val').innerText = (remaining / 1000).toFixed(2);
-    timerInterval = requestAnimationFrame(updateUI);
+    timerTimeout = requestAnimationFrame(updateDisplay);
 }
 
 function stopTimer() {
     isRunning = false;
-    cancelAnimationFrame(timerInterval);
+    cancelAnimationFrame(timerTimeout);
     document.getElementById('start-btn').innerText = "DÉMARRER";
     document.getElementById('start-btn').style.background = "var(--game-color)";
-    phase = "idle";
+    document.getElementById('phase-label').innerText = "STOPPÉ";
 }
 
-// FONCTION UPDATE : Calcule la nouvelle calibration
+// Logique de calibration type EonTimer
 function updateCalibration() {
-    const targetFrame = parseInt(document.getElementById('target-frame').value);
-    const frameHit = parseInt(document.getElementById('frame-hit').value);
-    const currentCalibration = parseFloat(document.getElementById('calibration').value) || 0;
+    const target = parseInt(document.getElementById('target-frame').value);
+    const hit = parseInt(document.getElementById('frame-hit').value);
+    const currentCalib = parseFloat(document.getElementById('calibration').value) || 0;
 
-    if (!frameHit) return alert("Indique la frame obtenue (Hit) !");
+    if (!hit) {
+        alert("Entre la frame que tu as obtenue !");
+        return;
+    }
 
-    // Formule EonTimer : Calib = Calib + ((Target - Hit) / 60 * 1000)
-    const diff = targetFrame - frameHit;
-    const adjustment = (diff / 59.7275) * 1000;
-    const newCalibration = currentCalibration + adjustment;
+    // Calcul de l'écart
+    const diff = target - hit;
+    const msDiff = (diff / 59.7275) * 1000;
+    const newCalib = currentCalib + msDiff;
 
-    document.getElementById('calibration').value = newCalibration.toFixed(2);
+    document.getElementById('calibration').value = Math.round(newCalib);
     
-    // Feedback visuel
-    if (navigator.vibrate) navigator.vibrate(30);
-    alert(`Calibration mise à jour !\nNouvelle valeur : ${newCalibration.toFixed(2)}ms`);
+    // Petit flash visuel pour confirmer
+    const calibInput = document.getElementById('calibration');
+    calibInput.style.background = "var(--game-color)";
+    setTimeout(() => calibInput.style.background = "", 300);
 }
