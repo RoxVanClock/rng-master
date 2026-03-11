@@ -4,53 +4,27 @@
     <meta charset="UTF-8">
     <link rel="stylesheet" href="../style-core.css">
     <style>
-        /* On force les labels et inputs à s'empiler proprement */
-        .card {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        label {
-            font-size: 0.9rem;
-            margin-bottom: -5px; /* Rapproche le texte de son champ */
-            display: block;
-        }
-        input[type="number"] {
-            width: 100%;
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid #444;
-            background: #333;
-            color: white;
-            font-size: 1rem;
-        }
-        .timer-val {
+        #timer-display {
             font-size: 4rem;
-            font-weight: bold;
             text-align: center;
+            font-weight: bold;
+            color: var(--game-color);
             margin: 20px 0;
-            color: var(--game-color, #2ecc71);
             font-family: monospace;
         }
-        .flex-row {
-            display: flex;
-            gap: 10px;
-        }
-        .flex-row > * { flex: 1; }
     </style>
 </head>
 <body>
-
     <div class="card" id="timer-card">
-        <h3 style="text-align:center; margin:0;">⏱️ Compte à rebours</h3>
-        <div class="timer-val" id="timer-display">0.000</div>
+        <h3>⏱️ Compte à rebours</h3>
+        <div id="timer-display">0.000</div>
         
         <label>Frame Cible (GBA)</label>
         <input type="number" id="target-frame" value="300" oninput="updateDisplay()">
-        
-        <div class="flex-row">
-            <button class="btn" id="start-btn" onclick="toggleTimer()">Démarrer</button>
-            <button class="btn" style="background:#555;" onclick="resetTimer()">Reset</button>
+
+        <div style="display: flex; gap: 10px;">
+            <button class="btn" id="start-btn" onclick="toggleTimer()" style="flex: 2;">DÉMARRER</button>
+            <button class="btn" onclick="resetTimer()" style="flex: 1; background: #555;">RESET</button>
         </div>
     </div>
 
@@ -58,18 +32,14 @@
         <h3>⚙️ Paramètres des Bips</h3>
         
         <label>Déclenchement (sec avant la fin)</label>
-        <input type="number" id="alert-seconds" value="2.0" step="0.5" min="0">
-        
+        <input type="number" id="alert-seconds" value="2.0" step="0.5">
+
         <label>Nombre total de bips</label>
-        <input type="number" id="alert-count" value="5" min="1">
+        <input type="number" id="alert-count" value="5">
         
-        <div style="margin-top:10px; display: flex; align-items: center; gap: 20px;">
-            <label style="display:flex; align-items:center; gap:8px;">
-                <input type="checkbox" id="sound-on" checked style="width:20px; height:20px;"> 🔊 Son
-            </label>
-            <label style="display:flex; align-items:center; gap:8px;">
-                <input type="checkbox" id="vibrate-on" style="width:20px; height:20px;"> 📱 Vibreur
-            </label>
+        <div class="checkbox-group">
+            <label><input type="checkbox" id="sound-on" checked> 🔊 Son</label>
+            <label><input type="checkbox" id="vibrate-on"> 📱 Vibreur</label>
         </div>
     </div>
 
