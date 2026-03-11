@@ -7,55 +7,61 @@
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="style-core.css">
     <style>
-        /* Force le corps de la page à faire exactement la taille de l'écran visible */
+        /* Structure bloquée à la taille de l'écran pour éviter les doubles barres de défilement */
         html, body {
             height: 100dvh;
             margin: 0;
             padding: 0;
-            overflow: hidden;
+            overflow: hidden; 
             display: flex;
             flex-direction: column;
             background: #1a1a1a;
         }
 
-        /* L'iframe doit défiler à l'intérieur s'il y a trop de contenu */
+        /* L'iframe occupe tout l'espace restant */
         #content-frame {
-            flex: 1; /* Prend l'espace restant */
+            flex: 1;
             width: 100%;
             border: none;
-            overflow-y: auto;
+            /* Support du défilement fluide sur iOS/Android */
+            -webkit-overflow-scrolling: touch;
         }
 
-        /* La barre de navigation reste TOUJOURS visible en bas */
+        /* Barre de navigation ergonomique (Thumb Zone) */
         .nav-bar {
             height: 70px;
             min-height: 70px;
-            background: #121212;
+            background: rgba(18, 18, 18, 0.95);
+            backdrop-filter: blur(10px); /* Effet de flou moderne */
             display: flex;
             justify-content: space-around;
             align-items: center;
             border-top: 1px solid rgba(255,255,255,0.1);
-            /* Protection pour la barre de navigation Android/iOS */
             padding-bottom: env(safe-area-inset-bottom);
-            z-index: 100;
+            z-index: 1000;
         }
 
         .nav-item {
-            color: white;
+            color: #ffffff;
             text-decoration: none;
             font-size: 0.75rem;
             display: flex;
             flex-direction: column;
             align-items: center;
-            opacity: 0.5;
+            opacity: 0.4;
+            transition: 0.3s;
+            flex: 1;
         }
 
         .nav-item.active {
             opacity: 1;
-            color: #2ecc71; /* Sera écrasé par le thème du jeu */
+            color: var(--game-color, #2ecc71);
         }
 
-        .nav-icon { font-size: 1.4rem; margin-bottom: 4px; }
+        .nav-icon {
+            font-size: 1.5rem;
+            margin-bottom: 2px;
+        }
     </style>
 </head>
 <body>
@@ -78,16 +84,21 @@
     </nav>
 
     <script>
-        // Fonction pour gérer l'état actif des boutons
+        /**
+         * Gère le changement visuel des onglets
+         */
         function setActive(el) {
             document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
             el.classList.add('active');
         }
 
-        // Enregistrement du Service Worker
+        /**
+         * Enregistrement du Service Worker pour le mode hors-ligne
+         */
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./service-worker.js');
+                navigator.serviceWorker.register('./service-worker.js')
+                    .catch(err => console.log('Erreur PWA:', err));
             });
         }
     </script>
