@@ -2,58 +2,74 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chrono de Précision - RNG Master</title>
     <link rel="stylesheet" href="../style-core.css">
     <style>
-        /* Style spécifique pour le décompte géant */
-        #timer-display { 
-            font-size: 5rem; 
-            font-weight: bold; 
-            color: var(--game-color); 
-            margin: 20px 0; 
-            font-family: 'Courier New', Courier, monospace; 
+        /* On force les labels et inputs à s'empiler proprement */
+        .card {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        label {
+            font-size: 0.9rem;
+            margin-bottom: -5px; /* Rapproche le texte de son champ */
+            display: block;
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #444;
+            background: #333;
+            color: white;
+            font-size: 1rem;
+        }
+        .timer-val {
+            font-size: 4rem;
+            font-weight: bold;
             text-align: center;
+            margin: 20px 0;
+            color: var(--game-color, #2ecc71);
+            font-family: monospace;
         }
-
-        /* Animation de flash pour le feedback visuel */
-        @keyframes flashEffect {
-            0% { background-color: var(--card); }
-            50% { background-color: var(--game-color); }
-            100% { background-color: var(--card); }
+        .flex-row {
+            display: flex;
+            gap: 10px;
         }
-        .flashing { animation: flashEffect 0.15s ease-in-out; }
-        
-        /* Classe utilitaire pour inverser la couleur du texte pendant le flash */
-        .text-contrast { color: #000 !important; }
+        .flex-row > * { flex: 1; }
     </style>
 </head>
 <body>
 
-    <div class="card" id="timer-card" style="text-align:center;">
-        <h3 id="timer-title">⏱️ Compte à rebours</h3>
-        <div id="timer-display">0.000</div>
+    <div class="card" id="timer-card">
+        <h3 style="text-align:center; margin:0;">⏱️ Compte à rebours</h3>
+        <div class="timer-val" id="timer-display">0.000</div>
         
         <label>Frame Cible (GBA)</label>
-        <input type="number" id="target-frame" value="300" oninput="updateDisplayFromInput()">
+        <input type="number" id="target-frame" value="300" oninput="updateDisplay()">
         
-        <div style="display: flex; gap: 10px; margin-top: 15px;">
-            <button class="btn" id="start-btn" onclick="toggleTimer()">DÉMARRER</button>
-            <button class="btn" style="background:#666;" onclick="resetTimer()">RESET</button>
+        <div class="flex-row">
+            <button class="btn" id="start-btn" onclick="toggleTimer()">Démarrer</button>
+            <button class="btn" style="background:#555;" onclick="resetTimer()">Reset</button>
         </div>
     </div>
 
     <div class="card">
         <h3>⚙️ Paramètres des Bips</h3>
+        
         <label>Déclenchement (sec avant la fin)</label>
         <input type="number" id="alert-seconds" value="2.0" step="0.5" min="0">
         
         <label>Nombre total de bips</label>
         <input type="number" id="alert-count" value="5" min="1">
         
-        <div style="margin-top:15px; display: flex; align-items: center; gap: 15px;">
-            <label><input type="checkbox" id="sound-on" checked> 🔊 Son</label>
-            <label><input type="checkbox" id="vibrate-on"> 📱 Vibreur</label>
+        <div style="margin-top:10px; display: flex; align-items: center; gap: 20px;">
+            <label style="display:flex; align-items:center; gap:8px;">
+                <input type="checkbox" id="sound-on" checked style="width:20px; height:20px;"> 🔊 Son
+            </label>
+            <label style="display:flex; align-items:center; gap:8px;">
+                <input type="checkbox" id="vibrate-on" style="width:20px; height:20px;"> 📱 Vibreur
+            </label>
         </div>
     </div>
 
