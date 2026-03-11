@@ -1,20 +1,19 @@
 /**
- * CONFIG.JS - Gestion Profils + Couleurs Dynamiques
+ * CONFIG.JS - Version Vert Mousse pour Vert Feuille
  */
 
 const GAME_COLORS = {
-    emerald: '#2ecc71', // Vert
-    ruby: '#e74c3c',    // Rouge
-    sapphire: '#3498db', // Bleu
-    fr: '#e67e22',      // Orange (Rouge Feu)
-    lg: '#27ae60'       // Vert forêt (Vert Feuille)
+    emerald: '#2ecc71', // Vert Emeraude (Vif)
+    ruby: '#e74c3c',    // Rouge Rubis
+    sapphire: '#3498db', // Bleu Saphir
+    fr: '#e67e22',      // Orange Rouge Feu
+    lg: '#556b2f'       // Vert Mousse (Dark Olive Green) pour Vert Feuille
 };
 
 window.addEventListener('DOMContentLoaded', () => {
     displayProfiles();
 });
 
-// Applique la couleur CSS à la page
 function updateThemeColor(game) {
     const color = GAME_COLORS[game] || '#2ecc71';
     document.documentElement.style.setProperty('--game-color', color);
@@ -42,10 +41,8 @@ function saveProfile() {
     };
 
     if (index > -1 && profiles[index]) {
-        // Mode modification
         profiles[index] = profileData;
     } else {
-        // Mode nouveau
         profiles.push(profileData);
         if (profiles.length === 1) selectProfile(profileData.id);
     }
@@ -66,7 +63,7 @@ function displayProfiles() {
     const activeProfile = profiles.find(p => p.id == activeId);
     if (activeProfile) {
         activeBox.style.display = "block";
-        updateThemeColor(activeProfile.game); // Applique la couleur du jeu actif
+        updateThemeColor(activeProfile.game);
         const s = (activeProfile.sid !== undefined) ? activeProfile.sid.toString().padStart(5, '0') : "00000";
         const t = activeProfile.tid.toString().padStart(5, '0');
         activeInfo.innerHTML = `<strong>${activeProfile.name}</strong><br><small style="color:#aaa;">TID: ${t} | SID: ${s}</small>`;
