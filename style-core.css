@@ -1,86 +1,45 @@
-/**
- * STYLE-CORE.CSS - Version Finale Corrigée
- */
-
-/* 1. CONFIGURATION DES COULEURS */
+/* --- CONFIGURATION GLOBALE --- */
 :root {
     --bg: #1a1a1a;
     --card: #252525;
-    --text: #e0e0e0;
-    --tab-bg: #121212;
-    --input-bg: #333;
-    --game-color: #2ecc71; 
+    --game-color: #2ecc71;
 }
 
-/* Thèmes par jeu */
-body.emerald { --game-color: #2ecc71; }
-body.ruby { --game-color: #e74c3c; }
-body.sapphire { --game-color: #3498db; }
-body.fr { --game-color: #ff4757; }
-body.lg { --game-color: #7bed9f; }
-
-/* 2. RÉGLAGE DU DÉFILEMENT (SCROLL) */
+/* --- LE FIX DU SCROLL POUR LES PAGES DANS /PAGES --- */
 html, body {
     margin: 0;
     padding: 0;
-    /* Important : On autorise le scroll ici pour que l'iframe puisse défiler */
-    overflow-y: auto; 
-    overflow-x: hidden;
+    height: 100%; /* Important */
     background: var(--bg);
-    color: var(--text);
-    font-family: -apple-system, system-ui, sans-serif;
-    /* Évite le rebond élastique sur Chrome Mobile */
-    overscroll-behavior-y: contain; 
+    color: white;
+    font-family: sans-serif;
+    
+    /* On force le défilement vertical ici */
+    overflow-y: auto !important; 
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch; /* Défilement fluide sur mobile */
 }
 
-/* 3. COMPOSANTS DE L'INTERFACE */
+/* On ajoute du padding en bas de chaque page pour que le dernier bouton 
+   ne soit pas caché par la nav-bar du parent */
+body {
+    padding-bottom: 100px; 
+    box-sizing: border-box;
+}
+
 .card {
     background: var(--card);
-    padding: 20px;
-    border-radius: 15px;
     margin: 15px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    padding: 20px;
+    border-radius: 12px;
 }
 
 .btn {
     background: var(--game-color);
-    color: white;
-    border: none;
+    width: 100%;
     padding: 15px;
-    width: 100%;
-    border-radius: 10px;
-    font-weight: bold;
-    font-size: 1rem;
-    text-transform: uppercase;
-    transition: 0.2s;
-}
-
-.btn:active {
-    transform: scale(0.96);
-    filter: brightness(0.8);
-}
-
-/* 4. FORMULAIRES OPTIMISÉS POUR LE TOUCHER */
-input, select {
-    width: 100%;
-    padding: 14px;
-    margin: 10px 0;
-    border-radius: 10px;
-    border: 1px solid rgba(255,255,255,0.1);
-    background: var(--input-bg);
+    border: none;
+    border-radius: 8px;
     color: white;
-    font-size: 1rem;
+    font-weight: bold;
 }
-
-/* 5. ANIMATIONS ET EFFETS */
-@keyframes flashEffect {
-    0% { background-color: var(--card); }
-    50% { background-color: var(--game-color); }
-    100% { background-color: var(--card); }
-}
-.flashing { animation: flashEffect 0.15s ease-in-out; }
-
-/* Styles pour les tableaux de résultats */
-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-th { text-align: left; color: var(--game-color); padding: 10px; border-bottom: 2px solid var(--game-color); }
-td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
