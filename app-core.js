@@ -1,28 +1,22 @@
 /**
- * AppCore : Utilitaire central partagé entre toutes les pages
+ * APP-CORE.JS - Le Cerveau du Style
  */
 const AppCore = {
-    // Récupère la liste des profils sauvegardés
-    getProfiles: () => {
-        return JSON.parse(localStorage.getItem('rng_profiles')) || [];
+    // Cette fonction sera appelée par config.js
+    updateGlobalTheme: function(color) {
+        if (!color) color = localStorage.getItem('rng_theme_color') || '#2ecc71';
+        document.documentElement.style.setProperty('--game-color', color);
+        localStorage.setItem('rng_theme_color', color);
     },
 
-    // Récupère le profil actif basé sur l'index stocké
-    getActiveProfile: () => {
-        const profiles = AppCore.getProfiles();
-        const index = localStorage.getItem('active_profile_idx');
-        return (index !== null && profiles[index]) ? profiles[index] : null;
-    },
-
-    // Applique les couleurs du jeu sélectionné au chargement
-    applyTheme: () => {
-        const active = AppCore.getActiveProfile();
-        if (active) {
-            // Ajoute la classe (ex: 'ruby') au body pour changer les variables CSS
-            document.body.className = active.game;
+    // Appliqué au chargement de chaque page
+    applyTheme: function() {
+        const savedColor = localStorage.getItem('rng_theme_color');
+        if (savedColor) {
+            document.documentElement.style.setProperty('--game-color', savedColor);
         }
     }
 };
 
-// Exécution automatique quand un onglet finit de charger
-window.addEventListener('DOMContentLoaded', AppCore.applyTheme);
+// Initialisation au chargement
+document.addEventListener('DOMContentLoaded', AppCore.applyTheme);
