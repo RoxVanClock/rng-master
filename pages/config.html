@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="stylesheet" href="../style-core.css">
 </head>
 <body>
@@ -37,16 +37,17 @@
             </div>
         </div>
 
-        <button class="btn" onclick="addNewProfile()">💾 ENREGISTRER</button>
+        <button class="btn" onclick="addNewProfile()">💾 ENREGISTRER LE PROFIL</button>
     </div>
 
     <div class="card">
-        <h3>📂 Profils (clique pour choisir)</h3>
+        <h3>📂 Tes Profils</h3>
+        <p style="font-size: 0.8rem; color: #888; margin-bottom: 15px;">Touche un profil pour l'activer.</p>
         <div id="profile-list"></div>
     </div>
 
     <div class="card">
-        <h3>🛠️ Données</h3>
+        <h3>🛠️ Sauvegarde</h3>
         <div style="display: flex; gap: 10px;">
             <button class="btn" onclick="exportProfiles()" style="background: #444; flex: 1;">EXPORT</button>
             <button class="btn" onclick="importProfiles()" style="background: #444; flex: 1;">IMPORT</button>
