@@ -2,6 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../style-core.css">
 </head>
 <body>
@@ -9,7 +10,7 @@
         <h3>👤 Nouveau Profil</h3>
         
         <label>Nom du profil</label>
-        <input type="text" id="prof-name" placeholder="Ex: Emeraude Shiny">
+        <input type="text" id="prof-name" placeholder="Ex: Emeraude Shiny Hunt">
         
         <label>Jeu GBA</label>
         <select id="prof-game">
@@ -36,7 +37,20 @@
 
     <div class="card">
         <h3>📂 Profils Enregistrés</h3>
-        <div id="profile-list"></div>
+        <div id="profile-list">
+            </div>
+    </div>
+
+    <div class="card">
+        <h3>🛠️ Gestion des données</h3>
+        <p style="font-size: 0.8rem; color: #888; margin-bottom: 15px;">
+            Utilise l'export si tu prévois de vider le cache de ton navigateur.
+        </p>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn" onclick="exportProfiles()" style="background: #444; flex: 1;">📤 Export</button>
+            <button class="btn" onclick="importProfiles()" style="background: #444; flex: 1;">📥 Import</button>
+        </div>
+        <input type="file" id="import-file" style="display:none" onchange="handleFileSelect(event)">
     </div>
 
     <script src="../app-core.js"></script>
