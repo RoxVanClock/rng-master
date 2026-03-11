@@ -1,5 +1,5 @@
 /**
- * CONFIG.JS - Version Vert Mousse pour Vert Feuille
+ * CONFIG.JS - Version Vert Sauge pour LG
  */
 
 const GAME_COLORS = {
@@ -7,7 +7,7 @@ const GAME_COLORS = {
     ruby: '#e74c3c',    // Rouge Rubis
     sapphire: '#3498db', // Bleu Saphir
     fr: '#e67e22',      // Orange Rouge Feu
-    lg: '#556b2f'       // Vert Mousse (Dark Olive Green) pour Vert Feuille
+    lg: '#8aad7b'       // Vert Sauge (Plus clair et doux) pour Vert Feuille
 };
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -16,8 +16,12 @@ window.addEventListener('DOMContentLoaded', () => {
 
 function updateThemeColor(game) {
     const color = GAME_COLORS[game] || '#2ecc71';
-    document.documentElement.style.setProperty('--game-color', color);
-    localStorage.setItem('rng_theme_color', color);
+    if (window.AppCore && window.AppCore.updateGlobalTheme) {
+        window.AppCore.updateGlobalTheme(color);
+    } else {
+        document.documentElement.style.setProperty('--game-color', color);
+        localStorage.setItem('rng_theme_color', color);
+    }
 }
 
 function saveProfile() {
