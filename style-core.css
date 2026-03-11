@@ -1,5 +1,5 @@
 /**
- * STYLE-CORE.CSS
+ * STYLE-CORE.CSS - Version Complète
  */
 :root {
     --bg: #1a1a1a;
@@ -15,6 +15,7 @@ html, body {
     font-family: sans-serif;
     margin: 0;
     padding: 10px;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .card {
@@ -24,6 +25,8 @@ html, body {
     margin-bottom: 15px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.3);
 }
+
+h3 { margin-top: 0; color: var(--game-color); }
 
 label {
     display: block;
@@ -40,34 +43,33 @@ input, select {
     border: 1px solid #444;
     border-radius: 8px;
     color: white;
+    font-size: 1rem;
     box-sizing: border-box;
 }
 
-/* --- LE FIX POUR LA CASE À COCHER --- */
+/* FIX CASE À COCHER */
 .checkbox-group {
     display: flex;
     align-items: center;
     background: rgba(0,0,0,0.2);
-    padding: 12px;
-    border-radius: 8px;
+    padding: 15px;
+    border-radius: 10px;
     margin-bottom: 20px;
-    border: 1px dashed #444;
+    border: 1px dashed #555;
 }
 
 .checkbox-group input[type="checkbox"] {
     width: 25px !important;
     height: 25px !important;
-    margin: 0 12px 0 0 !important;
-    cursor: pointer;
+    margin: 0 15px 0 0 !important;
     flex-shrink: 0;
 }
 
 .checkbox-group label {
     margin: 0;
-    cursor: pointer;
-    color: #fff;
-    font-weight: normal;
     flex: 1;
+    color: #fff;
+    font-size: 1rem;
 }
 
 .btn {
@@ -78,11 +80,25 @@ input, select {
     width: 100%;
     border-radius: 10px;
     font-weight: bold;
+    font-size: 1rem;
     cursor: pointer;
+    transition: 0.2s;
 }
 
-/* Style pour le profil sélectionné */
+.btn:active { transform: scale(0.98); opacity: 0.8; }
+
+/* STYLE DES PROFILS DANS LA LISTE */
+.profile-item {
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    background: #1e1e1e;
+    border: 2px solid #333;
+    transition: 0.2s;
+}
+
 .profile-item.active {
-    border: 2px solid var(--game-color) !important;
-    background: #2a2a2a !important;
+    border-color: var(--game-color);
+    background: #252525;
+    box-shadow: 0 0 10px rgba(46, 204, 113, 0.2);
 }
