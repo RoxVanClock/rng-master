@@ -1,5 +1,5 @@
 /**
- * CONFIG.JS - Version avec Edition et Affichage Actif
+ * CONFIG.JS - Gestion Complète (Modification + Sélection Visuelle)
  */
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -7,7 +7,6 @@ window.addEventListener('DOMContentLoaded', () => {
     if(window.AppCore) AppCore.applyTheme();
 });
 
-// Gère à la fois l'ajout et la modification
 function saveProfile() {
     const id = document.getElementById('edit-id').value;
     const name = document.getElementById('prof-name').value;
@@ -21,21 +20,20 @@ function saveProfile() {
     let profiles = JSON.parse(localStorage.getItem('rng_profiles') || "[]");
 
     if (id) {
-        // Mode Modification
+        // Mode Edition
         const index = profiles.findIndex(p => p.id === id);
         if (index !== -1) {
             profiles[index] = { id, name, game, tid: parseInt(tid), sid: parseInt(sid) || 0, isDeadBattery };
         }
-        resetForm();
     } else {
         // Mode Nouveau
         const newId = Date.now().toString();
         profiles.push({ id: newId, name, game, tid: parseInt(tid), sid: parseInt(sid) || 0, isDeadBattery });
         if (profiles.length === 1) localStorage.setItem('rng_active_profile', newId);
-        resetForm();
     }
 
     localStorage.setItem('rng_profiles', JSON.stringify(profiles));
+    resetForm();
     displayProfiles();
 }
 
@@ -47,19 +45,22 @@ function displayProfiles() {
     const profiles = JSON.parse(localStorage.getItem('rng_profiles') || "[]");
     const activeId = localStorage.getItem('rng_active_profile');
 
-    // 1. Mise à jour de l'encadré du profil actif
+    // Mise à jour de l'encadré Profil Actif
     const activeProfile = profiles.find(p => p.id === activeId);
     if (activeProfile) {
         activeBox.style.display = "block";
         activeInfo.innerHTML = `
-            <strong>${activeProfile.name}</strong><br>
-            <small>${activeProfile.game.toUpperCase()} | TID: ${activeProfile.tid}</small>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <strong style="font-size:1.1rem;">${activeProfile.name}</strong><br>
+                    <small style="color:#aaa;">${activeProfile.game.toUpperCase()} | TID: ${activeProfile.tid} | ${activeProfile.isDeadBattery ? '🪫' : '🔋'}</small>
+                </div>
+            </div>
         `;
     } else {
         activeBox.style.display = "none";
     }
 
-    // 2. Liste des profils
     if (profiles.length === 0) {
         list.innerHTML = "<p style='color:#666; text-align:center;'>Aucun profil.</p>";
         return;
@@ -68,16 +69,17 @@ function displayProfiles() {
     list.innerHTML = profiles.map(p => {
         const isActive = (p.id === activeId);
         return `
-            <div onclick="selectProfile('${p.id}')" class="profile-item ${isActive ? 'active' : ''}" style="cursor:pointer;">
+            <div onclick="selectProfile('${p.id}')" class="profile-item ${isActive ? 'active' : ''}">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <strong style="color:${isActive ? 'var(--game-color)' : '#fff'}">${p.name}</strong>
-                    <div style="display:flex; gap:10px;">
-                        <button onclick="event.stopPropagation(); prepareEdit('${p.id}')" style="background:none; border:none; color:#3498db; font-size:1.2rem;">✏️</button>
-                        <button onclick="event.stopPropagation(); deleteProfile('${p.id}')" style="background:none; border:none; color:#e74c3c; font-size:1.2rem;">🗑️</button>
+                    <div style="display:flex; gap:12px;">
+                        <button onclick="event.stopPropagation(); prepareEdit('${p.id}')" style="background:none; border:none; color:#3498db; font-size:1.3rem; padding:5px;">✏️</button>
+                        <button onclick="event.stopPropagation(); deleteProfile('${p.id}')" style="background:none; border:none; color:#e74c3c; font-size:1.3rem; padding:5px;">🗑️</button>
                     </div>
                 </div>
-                <div style="font-size:0.8rem; color:#888; margin-top:5px;">
-                    ${p.game.toUpperCase()} | ${p.isDeadBattery ? '🪫 Pile Morte' : '🔋 Pile OK'} | TID: ${p.tid}
+                <div style="font-size:0.85rem; color:#888; margin-top:5px;">
+                    ${p.game.toUpperCase()} | ${p.isDeadBattery ? '🪫 Pile Morte' : '🔋 Pile OK'}<br>
+                    TID: ${p.tid.toString().padStart(5, '0')} | SID: ${p.sid.toString().padStart(5, '0')}
                 </div>
             </div>
         `;
@@ -126,12 +128,13 @@ function deleteProfile(id) {
     displayProfiles();
 }
 
+// --- EXPORT / IMPORT ---
 function exportProfiles() {
     const data = localStorage.getItem('rng_profiles') || "[]";
     const blob = new Blob([data], {type: "application/json"});
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = "rng_backup.json";
+    a.download = "rng_profiles_save.json";
     a.click();
 }
 
