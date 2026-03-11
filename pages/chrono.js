@@ -1,6 +1,5 @@
 /**
- * CHRONO.JS - Moteur de précision
- * Gère le décompte, les bips sonores et les flashs visuels.
+ * CHRONO.JS - Version Dynamique
  */
 
 let audioCtx = null;
@@ -10,22 +9,22 @@ let startTime = 0;
 let targetTime = 0;
 let alertsDone = 0;
 
-/**
- * Initialisation au chargement
- */
+// Variables de réglages dynamiques
+let configAlertSeconds = 2;
+let configAlertCount = 5;
+
 window.addEventListener('DOMContentLoaded', () => {
     updateDisplay();
-    // On s'assure que le thème est bien appliqué
     if(window.AppCore) AppCore.applyTheme();
 });
 
 function updateDisplay() {
     const frames = document.getElementById('target-frame').value;
+    // On met à jour l'affichage principal (Frame / 60)
     document.getElementById('timer-display').innerText = (frames / 60).toFixed(3);
 }
 
 function toggleTimer() {
-    // Initialise l'audio au premier clic (obligatoire sur navigateur)
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     
     if (isRunning) {
@@ -36,13 +35,18 @@ function toggleTimer() {
 }
 
 function startTimer() {
+    // --- LECTURE DES RÉGLAGES UTILISATEUR ---
+    const targetFrame = parseInt(document.getElementById('target-frame').value);
+    configAlertSeconds = parseFloat(document.getElementById('alert-seconds').value);
+    configAlertCount = parseInt(document.getElementById('alert-count').value);
+    
+    // Conversion de la frame cible en millisecondes
+    targetTime = (targetFrame / 60) * 1000; 
+    
     isRunning = true;
+    alertsDone = 0;
     document.getElementById('start-btn').innerText = "STOP";
     
-    const targetFrame = parseInt(document.getElementById('target-frame').value);
-    targetTime = (targetFrame / 60) * 1000; // Conversion en millisecondes
-    
-    alertsDone = 0;
     startTime = performance.now();
     requestID = requestAnimationFrame(runLoop);
 }
@@ -62,13 +66,15 @@ function runLoop(now) {
 
     document.getElementById('timer-display').innerText = (remaining / 1000).toFixed(3);
 
-    // Logique des bips (5 derniers bips avant la fin)
-    const alertCount = 5;
-    const alertTime = 2000; // Les bips commencent 2 secondes avant
-    const interval = alertTime / (alertCount - 1);
+    // --- LOGIQUE DES BIPS DYNAMIQUE ---
+    // On calcule l'intervalle entre chaque bip selon tes réglages
+    const alertPeriodMs = configAlertSeconds * 1000; 
+    const interval = alertPeriodMs / (configAlertCount - 1);
     
-    const nextAlert = (alertCount - 1 - alertsDone) * interval;
-    if (remaining <= nextAlert && alertsDone < alertCount - 1) {
+    // Calcul de quand doit sonner le prochain bip
+    const nextAlertTime = (configAlertCount - 1 - alertsDone) * interval;
+
+    if (remaining <= nextAlertTime && alertsDone < configAlertCount - 1) {
         triggerAlert(false);
         alertsDone++;
     }
@@ -81,19 +87,27 @@ function triggerAlert(isFinal) {
     
     // Flash visuel
     card.classList.remove('flashing');
-    void card.offsetWidth; // Force le redémarrage de l'animation
+    void card.offsetWidth; 
     card.classList.add('flashing');
 
-    // Son (Oscillateur pur pour aucune latence)
+    // Son
     if (document.getElementById('sound-on').checked) {
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.connect(gain);
         gain.connect(audioCtx.destination);
-        osc.frequency.value = isFinal ? 1000 : 600;
+        
+        // Fréquence plus aiguë pour le bip final
+        osc.frequency.value = isFinal ? 1200 : 800;
         gain.gain.value = 0.1;
+        
         osc.start();
         osc.stop(audioCtx.currentTime + 0.1);
+    }
+
+    // Vibreur (Spécifique aux mobiles comme ton Pixel)
+    if (document.getElementById('vibrate-on').checked && navigator.vibrate) {
+        navigator.vibrate(isFinal ? 200 : 50);
     }
 }
 
