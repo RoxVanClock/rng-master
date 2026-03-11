@@ -2,45 +2,54 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="stylesheet" href="../style-core.css">
     <style>
-        #timer-display {
+        .timer-display {
             font-size: 4rem;
             text-align: center;
-            font-weight: bold;
-            color: var(--game-color);
-            margin: 20px 0;
             font-family: monospace;
+            margin: 20px 0;
+            color: var(--game-color);
+            text-shadow: 0 0 15px rgba(0,0,0,0.5);
+        }
+        .grid-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
         }
     </style>
 </head>
 <body>
-    <div class="card" id="timer-card">
-        <h3>⏱️ Compte à rebours</h3>
-        <div id="timer-display">0.000</div>
-        
-        <label>Frame Cible (GBA)</label>
-        <input type="number" id="target-frame" value="300" oninput="updateDisplay()">
-
-        <div style="display: flex; gap: 10px;">
-            <button class="btn" id="start-btn" onclick="toggleTimer()" style="flex: 2;">DÉMARRER</button>
-            <button class="btn" onclick="resetTimer()" style="flex: 1; background: #555;">RESET</button>
-        </div>
+    <div class="card">
+        <div class="timer-display" id="timer-val">0.00</div>
+        <div id="phase-label" style="text-align: center; color: #888; margin-bottom: 10px;">PRÊT</div>
     </div>
 
     <div class="card">
-        <h3>⚙️ Paramètres des Bips</h3>
-        
-        <label>Déclenchement (sec avant la fin)</label>
-        <input type="number" id="alert-seconds" value="2.0" step="0.5">
-
-        <label>Nombre total de bips</label>
-        <input type="number" id="alert-count" value="5">
-        
-        <div class="checkbox-group">
-            <label><input type="checkbox" id="sound-on" checked> 🔊 Son</label>
-            <label><input type="checkbox" id="vibrate-on"> 📱 Vibreur</label>
+        <h3>⏱️ Réglages Timer</h3>
+        <div class="grid-inputs">
+            <div>
+                <label>Pre-Timer (ms)</label>
+                <input type="number" id="pre-timer" value="0">
+            </div>
+            <div>
+                <label>Calibration (ms)</label>
+                <input type="number" id="calibration" value="0" step="0.01">
+            </div>
         </div>
+        
+        <label>Target Frame</label>
+        <input type="number" id="target-frame" value="1000">
+
+        <button class="btn" id="start-btn" onclick="toggleTimer()">DÉMARRER</button>
+    </div>
+
+    <div class="card">
+        <h3>🎯 Calibration</h3>
+        <label>Frame Hit (le cadre obtenu)</label>
+        <input type="number" id="frame-hit" placeholder="Ex: 1002">
+        <button class="btn" style="background: #444;" onclick="updateCalibration()">🔄 UPDATE CALIBRATION</button>
     </div>
 
     <script src="../app-core.js"></script>
