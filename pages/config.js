@@ -1,5 +1,5 @@
 /**
- * CONFIG.JS - Version Couleurs Dynamiques
+ * CONFIG.JS - Gestion Profils + Couleurs Dynamiques
  */
 
 const GAME_COLORS = {
@@ -14,9 +14,11 @@ window.addEventListener('DOMContentLoaded', () => {
     displayProfiles();
 });
 
+// Applique la couleur CSS à la page
 function updateThemeColor(game) {
     const color = GAME_COLORS[game] || '#2ecc71';
     document.documentElement.style.setProperty('--game-color', color);
+    localStorage.setItem('rng_theme_color', color);
 }
 
 function saveProfile() {
@@ -40,8 +42,10 @@ function saveProfile() {
     };
 
     if (index > -1 && profiles[index]) {
+        // Mode modification
         profiles[index] = profileData;
     } else {
+        // Mode nouveau
         profiles.push(profileData);
         if (profiles.length === 1) selectProfile(profileData.id);
     }
@@ -62,9 +66,10 @@ function displayProfiles() {
     const activeProfile = profiles.find(p => p.id == activeId);
     if (activeProfile) {
         activeBox.style.display = "block";
-        updateThemeColor(activeProfile.game); // Met à jour la couleur globale
+        updateThemeColor(activeProfile.game); // Applique la couleur du jeu actif
         const s = (activeProfile.sid !== undefined) ? activeProfile.sid.toString().padStart(5, '0') : "00000";
-        activeInfo.innerHTML = `<strong>${activeProfile.name}</strong><br><small>TID: ${activeProfile.tid.toString().padStart(5, '0')} | SID: ${s}</small>`;
+        const t = activeProfile.tid.toString().padStart(5, '0');
+        activeInfo.innerHTML = `<strong>${activeProfile.name}</strong><br><small style="color:#aaa;">TID: ${t} | SID: ${s}</small>`;
     } else {
         activeBox.style.display = "none";
         updateThemeColor('default');
@@ -128,7 +133,7 @@ function handleEdit(event, index) {
 
 function handleDelete(event, index) {
     event.stopPropagation();
-    if(!confirm("Supprimer ?")) return;
+    if(!confirm("Supprimer ce profil ?")) return;
     let profiles = JSON.parse(localStorage.getItem('rng_profiles') || "[]");
     const idToDelete = profiles[index].id;
     profiles.splice(index, 1);
