@@ -1,5 +1,5 @@
 /**
- * CONFIG.JS - Version Fix Importation
+ * CONFIG.JS - Version Ultra-Robuste (Basée sur l'Index)
  */
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -8,7 +8,7 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 function saveProfile() {
-    const editId = document.getElementById('edit-id').value;
+    const index = parseInt(document.getElementById('edit-index').value);
     const name = document.getElementById('prof-name').value;
     const game = document.getElementById('prof-game').value;
     const tid = document.getElementById('prof-tid').value;
@@ -19,15 +19,18 @@ function saveProfile() {
 
     let profiles = JSON.parse(localStorage.getItem('rng_profiles') || "[]");
 
-    if (editId) {
-        const idx = profiles.findIndex(p => p.id.toString() === editId.toString());
-        if (idx !== -1) {
-            profiles[idx] = { id: editId.toString(), name, game, tid: parseInt(tid), sid: parseInt(sid) || 0, isDeadBattery };
-        }
+    const profileData = { 
+        id: Date.now().toString(), // On regénère un ID propre
+        name, game, tid: parseInt(tid), sid: parseInt(sid) || 0, isDeadBattery 
+    };
+
+    if (index > -1 && profiles[index]) {
+        // Mode Edition : On remplace à la position précise
+        profiles[index] = profileData;
     } else {
-        const newId = Date.now().toString();
-        profiles.push({ id: newId, name, game, tid: parseInt(tid), sid: parseInt(sid) || 0, isDeadBattery });
-        if (profiles.length === 1) localStorage.setItem('rng_active_profile', newId);
+        // Nouveau profil
+        profiles.push(profileData);
+        if (profiles.length === 1) localStorage.setItem('rng_active_profile', profileData.id);
     }
 
     localStorage.setItem('rng_profiles', JSON.stringify(profiles));
@@ -43,31 +46,30 @@ function displayProfiles() {
     const profiles = JSON.parse(localStorage.getItem('rng_profiles') || "[]");
     const activeId = localStorage.getItem('rng_active_profile');
 
-    const activeProfile = profiles.find(p => p.id.toString() === (activeId || "").toString());
+    // Affichage Actif
+    const activeProfile = profiles.find(p => p.id == activeId);
     if (activeProfile) {
         activeBox.style.display = "block";
-        activeInfo.innerHTML = `<strong>${activeProfile.name}</strong> (${activeProfile.game.toUpperCase()})`;
-    } else {
-        activeBox.style.display = "none";
-    }
+        activeInfo.innerHTML = `<strong>${activeProfile.name}</strong>`;
+    } else { activeBox.style.display = "none"; }
 
     if (profiles.length === 0) {
         list.innerHTML = "<p style='text-align:center; color:#666;'>Aucun profil.</p>";
         return;
     }
 
-    list.innerHTML = profiles.map(p => {
-        const isActive = (activeId && p.id.toString() === activeId.toString());
+    list.innerHTML = profiles.map((p, i) => {
+        const isActive = (p.id == activeId);
         return `
             <div onclick="selectProfile('${p.id}')" class="profile-item ${isActive ? 'active' : ''}">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <div style="flex:1;">
-                        <strong style="color:${isActive ? 'var(--game-color)' : '#fff'}">${p.name}</strong><br>
-                        <span style="font-size:0.8rem; color:#888;">TID: ${p.tid} | ${p.isDeadBattery ? '🪫' : '🔋'}</span>
+                        <strong>${p.name}</strong><br>
+                        <small>TID: ${p.tid}</small>
                     </div>
                     <div style="display:flex; gap:10px;">
-                        <button class="action-btn" onclick="handleEdit(event, '${p.id}')" style="color:#3498db;">✏️</button>
-                        <button class="action-btn" onclick="handleDelete(event, '${p.id}')" style="color:#e74c3c;">🗑️</button>
+                        <button class="action-btn" onclick="handleEdit(event, ${i})" style="color:#3498db;">✏️</button>
+                        <button class="action-btn" onclick="handleDelete(event, ${i})" style="color:#e74c3c;">🗑️</button>
                     </div>
                 </div>
             </div>
@@ -76,20 +78,17 @@ function displayProfiles() {
 }
 
 function selectProfile(id) {
-    localStorage.setItem('rng_active_profile', id.toString());
-    if (navigator.vibrate) navigator.vibrate(15);
+    localStorage.setItem('rng_active_profile', id);
     displayProfiles();
 }
 
-function handleEdit(event, id) {
+function handleEdit(event, index) {
     event.stopPropagation();
     const profiles = JSON.parse(localStorage.getItem('rng_profiles') || "[]");
-    // On force la comparaison en texte pour les fichiers importés
-    const p = profiles.find(p => p.id.toString() === id.toString());
-    
+    const p = profiles[index];
     if (!p) return;
 
-    document.getElementById('edit-id').value = p.id.toString();
+    document.getElementById('edit-index').value = index;
     document.getElementById('prof-name').value = p.name;
     document.getElementById('prof-game').value = p.game;
     document.getElementById('prof-tid').value = p.tid;
@@ -101,22 +100,17 @@ function handleEdit(event, id) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-function handleDelete(event, id) {
+function handleDelete(event, index) {
     event.stopPropagation();
-    if(!confirm("Supprimer ce profil ?")) return;
-    
+    if(!confirm("Supprimer ?")) return;
     let profiles = JSON.parse(localStorage.getItem('rng_profiles') || "[]");
-    profiles = profiles.filter(p => p.id.toString() !== id.toString());
+    profiles.splice(index, 1);
     localStorage.setItem('rng_profiles', JSON.stringify(profiles));
-    
-    if(localStorage.getItem('rng_active_profile') === id.toString()) {
-        localStorage.removeItem('rng_active_profile');
-    }
     displayProfiles();
 }
 
 function resetForm() {
-    document.getElementById('edit-id').value = "";
+    document.getElementById('edit-index').value = "-1";
     document.getElementById('prof-name').value = "";
     document.getElementById('prof-tid').value = "";
     document.getElementById('prof-sid').value = "";
@@ -125,23 +119,23 @@ function resetForm() {
     document.getElementById('save-btn').innerText = "💾 ENREGISTRER LE PROFIL";
 }
 
-// GESTION IMPORT AMELIORÉE
 function handleFileSelect(event) {
     const reader = new FileReader();
     reader.onload = (e) => {
         try {
-            let imported = JSON.parse(e.target.result);
-            // On s'assure que chaque profil importé a un ID en texte propre
-            const cleaned = imported.map(p => ({
-                ...p,
-                id: (p.id || Date.now() + Math.random()).toString()
+            const data = JSON.parse(e.target.result);
+            // On force une nouvelle structure propre pour chaque profil importé
+            const cleaned = data.map(p => ({
+                id: Math.random().toString(36).substr(2, 9),
+                name: p.name || "Importé",
+                game: p.game || "emerald",
+                tid: parseInt(p.tid) || 0,
+                sid: parseInt(p.sid) || 0,
+                isDeadBattery: !!p.isDeadBattery
             }));
             localStorage.setItem('rng_profiles', JSON.stringify(cleaned));
-            displayProfiles();
-            alert("Importation réussie et synchronisée !");
-        } catch(err) {
-            alert("Erreur lors de la lecture du fichier.");
-        }
+            location.reload(); 
+        } catch(err) { alert("Fichier JSON corrompu"); }
     };
     reader.readAsText(event.target.files[0]);
 }
@@ -151,8 +145,7 @@ function exportProfiles() {
     const blob = new Blob([data], {type: "application/json"});
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = "rng_backup.json";
+    a.download = "rng_profiles.json";
     a.click();
 }
-
 function importProfiles() { document.getElementById('import-file').click(); }
