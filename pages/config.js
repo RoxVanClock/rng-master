@@ -1,5 +1,5 @@
 /**
- * CONFIG.JS - Version Fix Crayon
+ * CONFIG.JS - Version Fix Importation
  */
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -20,13 +20,11 @@ function saveProfile() {
     let profiles = JSON.parse(localStorage.getItem('rng_profiles') || "[]");
 
     if (editId) {
-        // Mise à jour d'un existant
-        const idx = profiles.findIndex(p => p.id === editId);
+        const idx = profiles.findIndex(p => p.id.toString() === editId.toString());
         if (idx !== -1) {
-            profiles[idx] = { id: editId, name, game, tid: parseInt(tid), sid: parseInt(sid) || 0, isDeadBattery };
+            profiles[idx] = { id: editId.toString(), name, game, tid: parseInt(tid), sid: parseInt(sid) || 0, isDeadBattery };
         }
     } else {
-        // Nouveau profil
         const newId = Date.now().toString();
         profiles.push({ id: newId, name, game, tid: parseInt(tid), sid: parseInt(sid) || 0, isDeadBattery });
         if (profiles.length === 1) localStorage.setItem('rng_active_profile', newId);
@@ -45,7 +43,7 @@ function displayProfiles() {
     const profiles = JSON.parse(localStorage.getItem('rng_profiles') || "[]");
     const activeId = localStorage.getItem('rng_active_profile');
 
-    const activeProfile = profiles.find(p => p.id === activeId);
+    const activeProfile = profiles.find(p => p.id.toString() === (activeId || "").toString());
     if (activeProfile) {
         activeBox.style.display = "block";
         activeInfo.innerHTML = `<strong>${activeProfile.name}</strong> (${activeProfile.game.toUpperCase()})`;
@@ -59,7 +57,7 @@ function displayProfiles() {
     }
 
     list.innerHTML = profiles.map(p => {
-        const isActive = (p.id === activeId);
+        const isActive = (activeId && p.id.toString() === activeId.toString());
         return `
             <div onclick="selectProfile('${p.id}')" class="profile-item ${isActive ? 'active' : ''}">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -78,18 +76,20 @@ function displayProfiles() {
 }
 
 function selectProfile(id) {
-    localStorage.setItem('rng_active_profile', id);
+    localStorage.setItem('rng_active_profile', id.toString());
     if (navigator.vibrate) navigator.vibrate(15);
     displayProfiles();
 }
 
 function handleEdit(event, id) {
-    event.stopPropagation(); // Empêche de sélectionner le profil en cliquant sur le crayon
+    event.stopPropagation();
     const profiles = JSON.parse(localStorage.getItem('rng_profiles') || "[]");
-    const p = profiles.find(p => p.id === id);
+    // On force la comparaison en texte pour les fichiers importés
+    const p = profiles.find(p => p.id.toString() === id.toString());
+    
     if (!p) return;
 
-    document.getElementById('edit-id').value = p.id;
+    document.getElementById('edit-id').value = p.id.toString();
     document.getElementById('prof-name').value = p.name;
     document.getElementById('prof-game').value = p.game;
     document.getElementById('prof-tid').value = p.tid;
@@ -102,14 +102,14 @@ function handleEdit(event, id) {
 }
 
 function handleDelete(event, id) {
-    event.stopPropagation(); // Empêche de sélectionner le profil en cliquant sur supprimer
+    event.stopPropagation();
     if(!confirm("Supprimer ce profil ?")) return;
     
     let profiles = JSON.parse(localStorage.getItem('rng_profiles') || "[]");
-    profiles = profiles.filter(p => p.id !== id);
+    profiles = profiles.filter(p => p.id.toString() !== id.toString());
     localStorage.setItem('rng_profiles', JSON.stringify(profiles));
     
-    if(localStorage.getItem('rng_active_profile') === id) {
+    if(localStorage.getItem('rng_active_profile') === id.toString()) {
         localStorage.removeItem('rng_active_profile');
     }
     displayProfiles();
@@ -125,7 +125,27 @@ function resetForm() {
     document.getElementById('save-btn').innerText = "💾 ENREGISTRER LE PROFIL";
 }
 
-// Export/Import
+// GESTION IMPORT AMELIORÉE
+function handleFileSelect(event) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
+            let imported = JSON.parse(e.target.result);
+            // On s'assure que chaque profil importé a un ID en texte propre
+            const cleaned = imported.map(p => ({
+                ...p,
+                id: (p.id || Date.now() + Math.random()).toString()
+            }));
+            localStorage.setItem('rng_profiles', JSON.stringify(cleaned));
+            displayProfiles();
+            alert("Importation réussie et synchronisée !");
+        } catch(err) {
+            alert("Erreur lors de la lecture du fichier.");
+        }
+    };
+    reader.readAsText(event.target.files[0]);
+}
+
 function exportProfiles() {
     const data = localStorage.getItem('rng_profiles') || "[]";
     const blob = new Blob([data], {type: "application/json"});
@@ -134,12 +154,5 @@ function exportProfiles() {
     a.download = "rng_backup.json";
     a.click();
 }
+
 function importProfiles() { document.getElementById('import-file').click(); }
-function handleFileSelect(event) {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        localStorage.setItem('rng_profiles', e.target.result);
-        displayProfiles();
-    };
-    reader.readAsText(event.target.files[0]);
-}
