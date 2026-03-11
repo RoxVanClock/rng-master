@@ -1,187 +1,105 @@
 /**
- * CONFIG.JS - Version Vert Sauge pour LG
+ * CHRONO.JS - Logique de précision type EonTimer
  */
 
-const GAME_COLORS = {
-    emerald: '#2ecc71', // Vert Emeraude (Vif)
-    ruby: '#e74c3c',    // Rouge Rubis
-    sapphire: '#3498db', // Bleu Saphir
-    fr: '#e67e22',      // Orange Rouge Feu
-    lg: '#8aad7b'       // Vert Sauge (Plus clair et doux) pour Vert Feuille
-};
+let timerInterval = null;
+let isRunning = false;
+let startTime = 0;
+let targetTime = 0;
+let phase = "idle"; // idle, pretimer, target
 
-window.addEventListener('DOMContentLoaded', () => {
-    displayProfiles();
-});
-
-function updateThemeColor(game) {
-    const color = GAME_COLORS[game] || '#2ecc71';
-    if (window.AppCore && window.AppCore.updateGlobalTheme) {
-        window.AppCore.updateGlobalTheme(color);
+function toggleTimer() {
+    if (isRunning) {
+        stopTimer();
     } else {
-        document.documentElement.style.setProperty('--game-color', color);
-        localStorage.setItem('rng_theme_color', color);
+        startTimer();
     }
 }
 
-function saveProfile() {
-    const index = parseInt(document.getElementById('edit-index').value);
-    const name = document.getElementById('prof-name').value;
-    const game = document.getElementById('prof-game').value;
-    const tid = document.getElementById('prof-tid').value;
-    const sid = document.getElementById('prof-sid').value;
-    const isDeadBattery = document.getElementById('prof-dead-battery').checked;
+function startTimer() {
+    const preTimerMs = parseFloat(document.getElementById('pre-timer').value) || 0;
+    const calibrationMs = parseFloat(document.getElementById('calibration').value) || 0;
+    const targetFrame = parseInt(document.getElementById('target-frame').value) || 0;
 
-    if (!name || !tid) return alert("Nom et TID obligatoires !");
-
-    let profiles = JSON.parse(localStorage.getItem('rng_profiles') || "[]");
-
-    const profileData = { 
-        id: Date.now().toString(),
-        name, game, 
-        tid: parseInt(tid), 
-        sid: (sid === "" || sid === null) ? 0 : parseInt(sid), 
-        isDeadBattery 
-    };
-
-    if (index > -1 && profiles[index]) {
-        profiles[index] = profileData;
-    } else {
-        profiles.push(profileData);
-        if (profiles.length === 1) selectProfile(profileData.id);
-    }
-
-    localStorage.setItem('rng_profiles', JSON.stringify(profiles));
-    resetForm();
-    displayProfiles();
-}
-
-function displayProfiles() {
-    const list = document.getElementById('profile-list');
-    const activeBox = document.getElementById('active-profile-display');
-    const activeInfo = document.getElementById('active-info');
+    // Calcul du temps de la target : (Frames / 59.7275 FPS) * 1000 + Calibration
+    // On utilise 59.7275 pour la précision GBA
+    const targetFrameMs = (targetFrame / 59.7275) * 1000;
     
-    const profiles = JSON.parse(localStorage.getItem('rng_profiles') || "[]");
-    const activeId = localStorage.getItem('rng_active_profile');
+    isRunning = true;
+    document.getElementById('start-btn').innerText = "STOP";
+    document.getElementById('start-btn').style.background = "#e74c3c";
 
-    const activeProfile = profiles.find(p => p.id == activeId);
-    if (activeProfile) {
-        activeBox.style.display = "block";
-        updateThemeColor(activeProfile.game);
-        const s = (activeProfile.sid !== undefined) ? activeProfile.sid.toString().padStart(5, '0') : "00000";
-        const t = activeProfile.tid.toString().padStart(5, '0');
-        activeInfo.innerHTML = `<strong>${activeProfile.name}</strong><br><small style="color:#aaa;">TID: ${t} | SID: ${s}</small>`;
+    startTime = performance.now();
+    
+    if (preTimerMs > 0) {
+        phase = "pretimer";
+        document.getElementById('phase-label').innerText = "PRE-TIMER...";
+        targetTime = preTimerMs;
     } else {
-        activeBox.style.display = "none";
-        updateThemeColor('default');
+        phase = "target";
+        document.getElementById('phase-label').innerText = "TARGET FRAME...";
+        targetTime = targetFrameMs + calibrationMs;
     }
 
-    if (profiles.length === 0) {
-        list.innerHTML = "<p style='text-align:center; color:#666;'>Aucun profil.</p>";
+    timerInterval = requestAnimationFrame(updateUI);
+}
+
+function updateUI() {
+    if (!isRunning) return;
+
+    const now = performance.now();
+    const elapsed = now - startTime;
+    const remaining = targetTime - elapsed;
+
+    if (remaining <= 0) {
+        if (phase === "pretimer") {
+            // Passage du Pre-timer à la Target Frame
+            if (navigator.vibrate) navigator.vibrate([50]); // Petit bip/vibreur
+            phase = "target";
+            document.getElementById('phase-label').innerText = "TARGET FRAME...";
+            const calibrationMs = parseFloat(document.getElementById('calibration').value) || 0;
+            const targetFrame = parseInt(document.getElementById('target-frame').value) || 0;
+            targetTime = (targetFrame / 59.7275) * 1000 + calibrationMs;
+            startTime = performance.now();
+            timerInterval = requestAnimationFrame(updateUI);
+        } else {
+            // Fin du timer
+            document.getElementById('timer-val').innerText = "0.00";
+            document.getElementById('phase-label').innerText = "TERMINÉ !";
+            if (navigator.vibrate) navigator.vibrate(200);
+            stopTimer();
+        }
         return;
     }
 
-    list.innerHTML = profiles.map((p, i) => {
-        const isActive = (p.id == activeId);
-        const sidDisplay = (p.sid !== undefined && p.sid !== null) ? p.sid.toString().padStart(5, '0') : "00000";
-        const tidDisplay = p.tid.toString().padStart(5, '0');
-
-        return `
-            <div onclick="selectProfile('${p.id}')" class="profile-item ${isActive ? 'active' : ''}">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div style="flex:1; line-height: 1.4;">
-                        <strong style="color:${isActive ? 'var(--game-color)' : '#fff'}; display:block; margin-bottom:4px;">${p.name}</strong>
-                        <div style="font-size:0.85rem; color:#bbb;">
-                            TID: ${tidDisplay} | SID: ${sidDisplay}
-                        </div>
-                        <div style="font-size:0.75rem; color:#888;">
-                            ${p.game.toUpperCase()} | ${p.isDeadBattery ? '🪫 Pile Morte' : '🔋 Pile OK'}
-                        </div>
-                    </div>
-                    <div style="display:flex; gap:10px;">
-                        <button class="action-btn" onclick="handleEdit(event, ${i})" style="color:#3498db;">✏️</button>
-                        <button class="action-btn" onclick="handleDelete(event, ${i})" style="color:#e74c3c;">🗑️</button>
-                    </div>
-                </div>
-            </div>
-        `;
-    }).join('');
+    document.getElementById('timer-val').innerText = (remaining / 1000).toFixed(2);
+    timerInterval = requestAnimationFrame(updateUI);
 }
 
-function selectProfile(id) {
-    localStorage.setItem('rng_active_profile', id);
-    if (navigator.vibrate) navigator.vibrate(15);
-    displayProfiles();
+function stopTimer() {
+    isRunning = false;
+    cancelAnimationFrame(timerInterval);
+    document.getElementById('start-btn').innerText = "DÉMARRER";
+    document.getElementById('start-btn').style.background = "var(--game-color)";
+    phase = "idle";
 }
 
-function handleEdit(event, index) {
-    event.stopPropagation();
-    const profiles = JSON.parse(localStorage.getItem('rng_profiles') || "[]");
-    const p = profiles[index];
-    if (!p) return;
+// FONCTION UPDATE : Calcule la nouvelle calibration
+function updateCalibration() {
+    const targetFrame = parseInt(document.getElementById('target-frame').value);
+    const frameHit = parseInt(document.getElementById('frame-hit').value);
+    const currentCalibration = parseFloat(document.getElementById('calibration').value) || 0;
 
-    document.getElementById('edit-index').value = index;
-    document.getElementById('prof-name').value = p.name;
-    document.getElementById('prof-game').value = p.game;
-    document.getElementById('prof-tid').value = p.tid;
-    document.getElementById('prof-sid').value = p.sid || 0;
-    document.getElementById('prof-dead-battery').checked = p.isDeadBattery;
+    if (!frameHit) return alert("Indique la frame obtenue (Hit) !");
 
-    document.getElementById('form-title').innerText = "✏️ Modifier Profil";
-    document.getElementById('save-btn').innerText = "💾 METTRE À JOUR";
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
+    // Formule EonTimer : Calib = Calib + ((Target - Hit) / 60 * 1000)
+    const diff = targetFrame - frameHit;
+    const adjustment = (diff / 59.7275) * 1000;
+    const newCalibration = currentCalibration + adjustment;
 
-function handleDelete(event, index) {
-    event.stopPropagation();
-    if(!confirm("Supprimer ce profil ?")) return;
-    let profiles = JSON.parse(localStorage.getItem('rng_profiles') || "[]");
-    const idToDelete = profiles[index].id;
-    profiles.splice(index, 1);
-    localStorage.setItem('rng_profiles', JSON.stringify(profiles));
+    document.getElementById('calibration').value = newCalibration.toFixed(2);
     
-    if(localStorage.getItem('rng_active_profile') == idToDelete) {
-        localStorage.removeItem('rng_active_profile');
-    }
-    displayProfiles();
+    // Feedback visuel
+    if (navigator.vibrate) navigator.vibrate(30);
+    alert(`Calibration mise à jour !\nNouvelle valeur : ${newCalibration.toFixed(2)}ms`);
 }
-
-function resetForm() {
-    document.getElementById('edit-index').value = "-1";
-    document.getElementById('prof-name').value = "";
-    document.getElementById('prof-tid').value = "";
-    document.getElementById('prof-sid').value = "";
-    document.getElementById('prof-dead-battery').checked = false;
-    document.getElementById('form-title').innerText = "👤 Nouveau Profil";
-    document.getElementById('save-btn').innerText = "💾 ENREGISTRER LE PROFIL";
-}
-
-function handleFileSelect(event) {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        try {
-            const data = JSON.parse(e.target.result);
-            const cleaned = data.map(p => ({
-                id: Math.random().toString(36).substr(2, 9),
-                name: p.name || "Importé",
-                game: p.game || "emerald",
-                tid: parseInt(p.tid) || 0,
-                sid: parseInt(p.sid) || 0,
-                isDeadBattery: !!p.isDeadBattery
-            }));
-            localStorage.setItem('rng_profiles', JSON.stringify(cleaned));
-            location.reload(); 
-        } catch(err) { alert("Erreur fichier"); }
-    };
-    reader.readAsText(event.target.files[0]);
-}
-
-function exportProfiles() {
-    const data = localStorage.getItem('rng_profiles') || "[]";
-    const blob = new Blob([data], {type: "application/json"});
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = "rng_profiles.json";
-    a.click();
-}
-function importProfiles() { document.getElementById('import-file').click(); }
