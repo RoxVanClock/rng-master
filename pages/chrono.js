@@ -1,12 +1,12 @@
 /**
- * CHRONO.JS - Version Ultra-Précision (Zéro Lag)
+ * CHRONO.JS - Version Ultra-Précision Visuelle et Sonore
  */
 let audioCtx = null;
 let requestID = null;
 let isRunning = false;
 let startTime = 0;
 let targetTimeMs = 0;
-let alertsScheduled = 0;
+let alertsScheduled = []; // On stocke les temps pour les flasher
 
 window.addEventListener('DOMContentLoaded', () => {
     updateDisplay();
@@ -37,25 +37,32 @@ function startTimer() {
     if (targetTimeMs <= 0) return;
 
     isRunning = true;
-    alertsScheduled = 0;
+    alertsScheduled = []; // Réinitialisation de la liste des flashs
     
     const btn = document.getElementById('start-btn');
     btn.innerText = "STOP";
     btn.style.background = "#e74c3c";
     
-    // Temps de départ précis de l'AudioContext (plus fiable que performance.now)
     startTime = audioCtx.currentTime;
     
-    // Planification de TOUS les bips dès le départ pour éviter le lag processeur
+    // Planification de TOUS les bips ET stockage des temps de flash
     const alertPeriodSec = configAlertSeconds;
     const interval = alertPeriodSec / (configAlertCount - 1);
     const totalDurationSec = targetTimeMs / 1000;
 
     for (let i = 0; i < configAlertCount; i++) {
         const isFinal = (i === configAlertCount - 1);
-        // On calcule le moment exact du bip par rapport au début
         const timeToBeep = totalDurationSec - ((configAlertCount - 1 - i) * interval);
-        scheduleSound(startTime + timeToBeep, isFinal);
+        const absoluteTime = startTime + timeToBeep;
+        
+        // Planification sonore matérielle (toujours prioritaire)
+        scheduleSound(absoluteTime, isFinal);
+        
+        // Stockage du temps (en secondes) pour le flash visuel
+        alertsScheduled.push({
+            time: absoluteTime,
+            done: false
+        });
     }
 
     requestID = requestAnimationFrame(updateUI);
@@ -68,10 +75,10 @@ function scheduleSound(time, isFinal) {
     osc.connect(gain);
     gain.connect(audioCtx.destination);
     
-    osc.frequency.value = isFinal ? 1000 : 600;
-    gain.gain.value = 0.1;
+    // Fréquences pour un rythme clair
+    osc.frequency.setValueAtTime(isFinal ? 1000 : 600, time);
+    gain.gain.setValueAtTime(0.1, time);
     
-    // La magie est ici : le son est calé sur l'horloge matérielle
     osc.start(time);
     osc.stop(time + 0.1);
 }
@@ -79,8 +86,10 @@ function scheduleSound(time, isFinal) {
 function updateUI() {
     if (!isRunning) return;
 
-    const elapsed = audioCtx.currentTime - startTime;
-    const remaining = (targetTimeMs / 1000) - elapsed;
+    const currentTime = audioCtx.currentTime;
+    const elapsed = currentTime - startTime;
+    const totalDurationSec = targetTimeMs / 1000;
+    const remaining = totalDurationSec - elapsed;
 
     if (remaining <= 0) {
         document.getElementById('timer-display').innerText = "0.000";
@@ -88,17 +97,38 @@ function updateUI() {
         return;
     }
 
+    // Affichage précis du temps restant
     document.getElementById('timer-display').innerText = remaining.toFixed(3);
     
-    // Flash visuel (on garde le visuel sur le rafraîchissement d'écran)
-    // On pourrait synchroniser le flash aussi, mais le son est le plus important.
+    // --- MAGIE VISUELLE SYNCHRONISÉE ---
+    // On parcourt les flashs planifiés
+    for (let i = 0; i < alertsScheduled.length; i++) {
+        const alert = alertsScheduled[i];
+        
+        // Si le flash n'est pas fait ET qu'on est très proche du son
+        // (moins de 16ms, soit une frame d'écran à 60Hz)
+        if (!alert.done && (alert.time - currentTime) < 0.016) {
+            triggerVisualFlash();
+            alert.done = true; // Marquer comme fait pour ne pas reflasher
+        }
+    }
     
     requestID = requestAnimationFrame(updateUI);
 }
 
+function triggerVisualFlash() {
+    const card = document.getElementById('timer-card');
+    if (card) {
+        card.classList.remove('flashing');
+        // Astuce pour forcer le redessin de l'animation
+        void card.offsetWidth; 
+        card.classList.add('flashing');
+    }
+}
+
 function stopTimer() {
-    // Note : Arrêter les sons déjà planifiés est complexe, 
-    // ici on arrête juste l'affichage et la boucle.
+    // Note : Arrêter les sons matériels planifiés est complexe,
+    // on arrête ici l'affichage et la boucle.
     cancelAnimationFrame(requestID);
     isRunning = false;
     const btn = document.getElementById('start-btn');
