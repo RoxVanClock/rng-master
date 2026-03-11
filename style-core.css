@@ -1,5 +1,5 @@
 /**
- * STYLE-CORE.CSS - Version Complète
+ * STYLE-CORE.CSS - Version Intégrale
  */
 :root {
     --bg: #1a1a1a;
@@ -47,7 +47,6 @@ input, select {
     box-sizing: border-box;
 }
 
-/* FIX CASE À COCHER */
 .checkbox-group {
     display: flex;
     align-items: center;
@@ -69,7 +68,6 @@ input, select {
     margin: 0;
     flex: 1;
     color: #fff;
-    font-size: 1rem;
 }
 
 .btn {
@@ -95,6 +93,8 @@ input, select {
     background: #1e1e1e;
     border: 2px solid #333;
     transition: 0.2s;
+    -webkit-user-select: none;
+    user-select: none;
 }
 
 .profile-item.active {
