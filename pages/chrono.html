@@ -8,15 +8,17 @@
         #flash-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: white; opacity: 0; pointer-events: none; z-index: 9999;
+            transition: opacity 0.05s;
         }
         .timer-display { 
-            font-size: 5rem; text-align: center; font-family: monospace; 
-            margin: 10px 0; color: var(--game-color); font-weight: bold; 
+            font-size: 5.5rem; text-align: center; font-family: 'Courier New', monospace; 
+            margin: 10px 0; color: var(--game-color); font-weight: bold;
+            text-shadow: 2px 2px 0px rgba(0,0,0,0.2);
         }
-        .stats-row { display: flex; justify-content: space-around; align-items: center; margin-bottom: 15px; color: #888; }
-        .stat-val { color: var(--game-color); font-weight: bold; font-size: 1.2rem; }
-        .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .checkbox-row { display: flex; justify-content: space-around; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 8px; margin: 10px 0; }
+        .stats-row { display: flex; justify-content: space-around; padding: 10px; background: rgba(0,0,0,0.1); border-radius: 8px; margin-bottom: 15px; }
+        .label-small { font-size: 0.75rem; color: #888; text-transform: uppercase; }
+        .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .checkbox-row { display: flex; justify-content: space-around; align-items: center; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -24,26 +26,31 @@
 
     <div class="card">
         <div class="stats-row">
-            <div>PHASE: <span id="count-val" class="stat-val">0</span></div>
-            <div id="phase-label" style="text-transform: uppercase; font-weight: bold;">PRÊT</div>
+            <div style="text-align:center">
+                <div class="label-small">Phase</div>
+                <div id="count-val" style="font-weight:bold; font-size:1.2rem; color:var(--game-color)">0</div>
+            </div>
+            <div style="text-align:center">
+                <div class="label-small">Status</div>
+                <div id="phase-label" style="font-weight:bold; font-size:1.2rem">PRÊT</div>
+            </div>
         </div>
         <div class="timer-display" id="timer-val">0.000</div>
     </div>
 
     <div class="card">
-        <h3>⏱️ Configuration</h3>
         <div class="grid-inputs">
             <div>
                 <label>Pre-Timer (ms)</label>
                 <input type="number" id="pre-timer" value="0">
             </div>
             <div>
-                <label>Calibration (ms)</label>
+                <label>Calibration</label>
                 <input type="number" id="calibration" value="0">
             </div>
         </div>
         
-        <div class="grid-inputs">
+        <div class="grid-inputs" style="margin-top:10px">
             <div>
                 <label>Target Frame</label>
                 <input type="number" id="target-frame" value="1000">
@@ -54,26 +61,33 @@
             </div>
         </div>
 
-        <div class="grid-inputs">
+        <div class="grid-inputs" style="margin-top:10px">
             <div>
-                <label>Bips fin (s)</label>
-                <input type="number" id="beep-count" value="2">
+                <label>Bips avant fin</label>
+                <input type="number" id="beep-count" value="5">
             </div>
             <div class="checkbox-row">
-                <label><input type="checkbox" id="enable-vibrate" checked> 📳</label>
-                <label><input type="checkbox" id="enable-sound" checked> 🔊</label>
+                <label style="display:flex; align-items:center; cursor:pointer">
+                    <input type="checkbox" id="enable-vibrate" checked style="width:18px; height:18px; margin-right:5px"> 📳
+                </label>
+                <label style="display:flex; align-items:center; cursor:pointer">
+                    <input type="checkbox" id="enable-sound" checked style="width:18px; height:18px; margin-right:5px"> 🔊
+                </label>
             </div>
         </div>
 
-        <button class="btn" id="start-btn" onclick="window.toggleTimer()" style="margin-top:10px;">DÉMARRER</button>
-        <button class="btn" onclick="window.resetCounter()" style="background:#444; margin-top:10px;">RÉINITIALISER COMPTEUR</button>
+        <button class="btn" id="start-btn" onclick="window.toggleTimer()" style="margin-top:20px; font-size:1.2rem">START</button>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px">
+            <button class="btn" onclick="window.resetCounter()" style="background:#555; padding:8px">RESET COUNT</button>
+            <button class="btn" onclick="window.resetCalibration()" style="background:#555; padding:8px">RESET CALIB</button>
+        </div>
     </div>
 
     <div class="card">
-        <h3>🎯 Calibration</h3>
-        <label>Frame Hit</label>
+        <h3>🎯 Calibration Rapide</h3>
+        <label>Frame Hit (cadre obtenu)</label>
         <input type="number" id="frame-hit" placeholder="Ex: 1002">
-        <button class="btn" style="background: #333;" onclick="window.updateCalibration()">🔄 UPDATE CALIBRATION</button>
+        <button class="btn" style="background: var(--game-color); opacity: 0.8; margin-top: 10px;" onclick="window.updateCalibration()">UPDATE</button>
     </div>
 
     <script src="../app-core.js"></script>
