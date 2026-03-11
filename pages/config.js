@@ -1,11 +1,23 @@
 /**
- * CONFIG.JS - Version Fix SID Visible
+ * CONFIG.JS - Version Couleurs Dynamiques
  */
+
+const GAME_COLORS = {
+    emerald: '#2ecc71', // Vert
+    ruby: '#e74c3c',    // Rouge
+    sapphire: '#3498db', // Bleu
+    fr: '#e67e22',      // Orange (Rouge Feu)
+    lg: '#27ae60'       // Vert forêt (Vert Feuille)
+};
 
 window.addEventListener('DOMContentLoaded', () => {
     displayProfiles();
-    if(window.AppCore) AppCore.applyTheme();
 });
+
+function updateThemeColor(game) {
+    const color = GAME_COLORS[game] || '#2ecc71';
+    document.documentElement.style.setProperty('--game-color', color);
+}
 
 function saveProfile() {
     const index = parseInt(document.getElementById('edit-index').value);
@@ -31,7 +43,7 @@ function saveProfile() {
         profiles[index] = profileData;
     } else {
         profiles.push(profileData);
-        if (profiles.length === 1) localStorage.setItem('rng_active_profile', profileData.id);
+        if (profiles.length === 1) selectProfile(profileData.id);
     }
 
     localStorage.setItem('rng_profiles', JSON.stringify(profiles));
@@ -50,10 +62,12 @@ function displayProfiles() {
     const activeProfile = profiles.find(p => p.id == activeId);
     if (activeProfile) {
         activeBox.style.display = "block";
-        const s = activeProfile.sid !== undefined ? activeProfile.sid : 0;
-        activeInfo.innerHTML = `<strong>${activeProfile.name}</strong><br><small>TID: ${activeProfile.tid} | SID: ${s}</small>`;
+        updateThemeColor(activeProfile.game); // Met à jour la couleur globale
+        const s = (activeProfile.sid !== undefined) ? activeProfile.sid.toString().padStart(5, '0') : "00000";
+        activeInfo.innerHTML = `<strong>${activeProfile.name}</strong><br><small>TID: ${activeProfile.tid.toString().padStart(5, '0')} | SID: ${s}</small>`;
     } else {
         activeBox.style.display = "none";
+        updateThemeColor('default');
     }
 
     if (profiles.length === 0) {
@@ -63,7 +77,6 @@ function displayProfiles() {
 
     list.innerHTML = profiles.map((p, i) => {
         const isActive = (p.id == activeId);
-        // On sécurise l'affichage du SID
         const sidDisplay = (p.sid !== undefined && p.sid !== null) ? p.sid.toString().padStart(5, '0') : "00000";
         const tidDisplay = p.tid.toString().padStart(5, '0');
 
@@ -91,6 +104,7 @@ function displayProfiles() {
 
 function selectProfile(id) {
     localStorage.setItem('rng_active_profile', id);
+    if (navigator.vibrate) navigator.vibrate(15);
     displayProfiles();
 }
 
@@ -116,8 +130,13 @@ function handleDelete(event, index) {
     event.stopPropagation();
     if(!confirm("Supprimer ?")) return;
     let profiles = JSON.parse(localStorage.getItem('rng_profiles') || "[]");
+    const idToDelete = profiles[index].id;
     profiles.splice(index, 1);
     localStorage.setItem('rng_profiles', JSON.stringify(profiles));
+    
+    if(localStorage.getItem('rng_active_profile') == idToDelete) {
+        localStorage.removeItem('rng_active_profile');
+    }
     displayProfiles();
 }
 
