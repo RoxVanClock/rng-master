@@ -8,7 +8,7 @@
 <body>
     <div class="card" id="form-card">
         <h3 id="form-title">👤 Nouveau Profil</h3>
-        <input type="hidden" id="edit-id"> 
+        <input type="hidden" id="edit-id" value=""> 
         
         <label>Nom du profil</label>
         <input type="text" id="prof-name" placeholder="Ex: Emeraude Shiny">
@@ -41,14 +41,13 @@
         <button class="btn" id="save-btn" onclick="saveProfile()">💾 ENREGISTRER LE PROFIL</button>
     </div>
 
-    <div class="card" id="active-profile-display" style="display:none; border: 2px solid var(--game-color); background: rgba(46, 204, 113, 0.05);">
-        <h3 style="font-size: 0.9rem; margin-bottom: 5px; color: var(--game-color);">⭐ PROFIL ACTIF</h3>
+    <div class="card" id="active-profile-display" style="display:none; border: 2px solid var(--game-color); background: rgba(46, 204, 113, 0.1);">
+        <h3 style="font-size: 0.9rem; margin-bottom: 5px;">⭐ PROFIL ACTIF</h3>
         <div id="active-info"></div>
     </div>
 
     <div class="card">
-        <h3>📂 Liste des Profils</h3>
-        <p style="font-size: 0.75rem; color: #888; margin-bottom: 10px;">Touchez un profil pour l'activer.</p>
+        <h3>📂 Tes Profils</h3>
         <div id="profile-list"></div>
     </div>
 
