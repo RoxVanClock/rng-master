@@ -1,66 +1,122 @@
-/* VARIABLES DE BASE */
+/**
+ * STYLE-CORE.CSS
+ * Design principal de l'application RNG Master
+ * Optimisé pour Pixel 8 Pro (Chrome Mobile)
+ */
+
+/* 1. VARIABLES DE COULEURS ET THÈMES */
 :root {
     --bg: #1a1a1a;
     --card: #252525;
     --text: #e0e0e0;
     --tab-bg: #121212;
     --input-bg: #333;
-    --game-color: #2ecc71; /* Couleur par défaut (Émeraude) */
+    --game-color: #2ecc71; /* Vert Émeraude par défaut */
 }
 
-/* THÈMES DYNAMIQUES (Injectés par app-core.js) */
+/* Couleurs dynamiques selon le jeu sélectionné */
 body.emerald { --game-color: #2ecc71; }
 body.ruby { --game-color: #e74c3c; }
 body.sapphire { --game-color: #3498db; }
 body.fr { --game-color: #ff4757; }
 body.lg { --game-color: #7bed9f; }
 
-/* STYLE GLOBAL */
-body {
+/* 2. MISE EN PAGE PRINCIPALE (FIX POUR MOBILE) */
+html, body {
+    /* Utilisation du Dynamic Viewport Height pour éviter que Chrome ne cache le bas */
+    height: 100dvh; 
     margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    padding: 0;
+    overflow: hidden; /* Empêche le défilement inutile de la page parente */
+    display: flex;
+    flex-direction: column;
     background: var(--bg);
     color: var(--text);
-    padding: 10px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
-/* CARTES ET CONTENEURS */
+/* L'iframe qui contient config, search ou chrono */
+iframe {
+    flex: 1; /* Prend tout l'espace disponible au-dessus de la nav */
+    width: 100%;
+    border: none;
+    background: var(--bg);
+}
+
+/* 3. BARRE DE NAVIGATION (FIXÉE EN BAS) */
+.nav-bar {
+    height: 75px; /* Hauteur confortable pour le pouce */
+    min-height: 75px;
+    background: var(--tab-bg);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    /* Protection pour la zone de navigation Android du Pixel */
+    padding-bottom: env(safe-area-inset-bottom); 
+}
+
+.nav-item {
+    color: var(--text);
+    text-decoration: none;
+    font-size: 0.8rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    opacity: 0.5;
+    transition: 0.3s ease;
+}
+
+.nav-item.active {
+    opacity: 1;
+    color: var(--game-color);
+    font-weight: bold;
+    transform: translateY(-2px); /* Petit effet de levée */
+}
+
+/* 4. COMPOSANTS RÉUTILISABLES (Utilisés dans les iframes) */
 .card {
     background: var(--card);
     padding: 15px;
     border-radius: 12px;
-    margin-bottom: 15px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    margin: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.4);
 }
 
-/* BOUTONS PRÉCISION GBA */
 .btn {
     background: var(--game-color);
     color: white;
     border: none;
-    padding: 12px;
+    padding: 14px;
     width: 100%;
     border-radius: 8px;
     font-weight: bold;
     cursor: pointer;
     text-transform: uppercase;
-    transition: filter 0.2s;
+    font-size: 0.9rem;
 }
 
 .btn:active {
-    filter: brightness(0.8);
+    filter: brightness(0.7);
+    transform: scale(0.98);
 }
 
-/* FORMULAIRES */
-label { font-size: 0.85rem; opacity: 0.8; display: block; margin-top: 10px; }
+/* 5. FORMULAIRES */
 input, select {
     width: 100%;
-    padding: 10px;
-    margin: 5px 0;
-    border-radius: 6px;
+    padding: 12px;
+    margin: 8px 0;
+    border-radius: 8px;
     border: 1px solid rgba(255,255,255,0.1);
     background: var(--input-bg);
-    color: var(--text);
+    color: white;
     box-sizing: border-box;
-    font-size: 1rem;
 }
+
+/* 6. ANIMATIONS */
+@keyframes flashEffect {
+    0% { background-color: var(--card); }
+    50% { background-color: var(--game-color); }
+    100% { background-color: var(--card); }
+}
+.flashing { animation: flashEffect 0.15s ease-in-out; }
