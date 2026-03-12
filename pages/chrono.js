@@ -67,7 +67,6 @@
         const targetMs = (target / FPS_GBA * 1000) + calib;
         endTime = performance.now() + targetMs;
 
-        // On définit le moment du premier bip (ex: 5000ms avant la fin)
         const startSec = parseInt(document.getElementById('beep-start').value) || 0;
         nextBeepTime = startSec * 1000;
     }
@@ -85,12 +84,11 @@
 
         document.getElementById('timer-val').innerText = (remaining / 1000).toFixed(3);
         
-        // LOGIQUE : Si on est en TARGET et que le temps restant passe sous le seuil du prochain bip
+        // Un bip toutes les secondes à partir de beep-start
         if (currentPhase === "TARGET" && nextBeepTime > 0) {
             if (remaining <= nextBeepTime) {
                 playBeep(440, 50);
                 flashCircle();
-                // On descend exactement de 1 seconde pour le prochain bip
                 nextBeepTime -= 1000; 
             }
         }
