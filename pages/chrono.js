@@ -4,7 +4,9 @@
     let endTime = 0;
     let currentPhase = "idle"; 
     let counter = 0;
-    let nextBeepTime = -1; 
+    let nextBeepThreshold = -1; 
+    let beepsRemaining = 0;
+    let beepInterval = 0;
     const FPS_GBA = 59.7275;
 
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -52,7 +54,6 @@
             currentPhase = "PRE-TIMER";
             document.getElementById('phase-label').innerText = "PRE-TIMER";
             endTime = performance.now() + preTimer;
-            nextBeepTime = -1; 
         } else {
             startTargetPhase();
         }
@@ -67,8 +68,15 @@
         const targetMs = (target / FPS_GBA * 1000) + calib;
         endTime = performance.now() + targetMs;
 
-        const startSec = parseInt(document.getElementById('beep-start').value) || 0;
-        nextBeepTime = startSec * 1000;
+        // --- CALCUL DE L'INTERVALLE ---
+        const startSec = parseFloat(document.getElementById('beep-start').value) || 0;
+        const totalBeeps = parseInt(document.getElementById('num-beeps').value) || 1;
+        
+        beepsRemaining = totalBeeps;
+        // Si on veut 5 bips sur 2 secondes, on a 4 intervalles entre les bips
+        // Le 1er bip est à 2s, le dernier à 0s.
+        beepInterval = (totalBeeps > 1) ? (startSec * 1000) / (totalBeeps - 1) : 0;
+        nextBeepThreshold = startSec * 1000;
     }
 
     function updateDisplay() {
@@ -84,12 +92,13 @@
 
         document.getElementById('timer-val').innerText = (remaining / 1000).toFixed(3);
         
-        // Un bip toutes les secondes à partir de beep-start
-        if (currentPhase === "TARGET" && nextBeepTime > 0) {
-            if (remaining <= nextBeepTime) {
+        // Logique des bips proportionnels (on joue tous les bips sauf le dernier qui est géré par handlePhaseEnd)
+        if (currentPhase === "TARGET" && beepsRemaining > 1) {
+            if (remaining <= nextBeepThreshold) {
                 playBeep(440, 50);
                 flashCircle();
-                nextBeepTime -= 1000; 
+                beepsRemaining--;
+                nextBeepThreshold -= beepInterval;
             }
         }
 
@@ -109,7 +118,7 @@
         } else {
             counter++;
             document.getElementById('count-val').innerText = counter;
-            playBeep(1200, 200); 
+            playBeep(1200, 200); // Bip final
             flashCircle();
             stopTimer();
         }
