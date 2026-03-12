@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>RNG Master Pro</title>
     <style>
-        /* RESET TOTAL POUR ÉVITER LES LIENS BLEUS */
+        /* RESET TOTAL */
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
         html, body {
@@ -26,7 +26,7 @@
             background: #1a1a1a;
         }
 
-        /* BARRE DE NAVIGATION STYLE APPLI MOBILE */
+        /* BARRE DE NAVIGATION */
         .nav-bar {
             height: 70px;
             background: #121212;
@@ -48,7 +48,6 @@
             transition: 0.2s;
         }
 
-        /* Couleur quand l'onglet est sélectionné */
         .nav-item.active {
             color: #2ecc71;
             background: rgba(46, 204, 113, 0.05);
@@ -69,7 +68,7 @@
             <span class="nav-icon">⚙️</span>
             <span>Config</span>
         </a>
-        <a href="pages/search.html" target="content-frame" class="nav-item" onclick="setActive(this)">
+        <a href="pages/chercher.html" target="content-frame" class="nav-item" onclick="setActive(this)">
             <span class="nav-icon">🔍</span>
             <span>Chercher</span>
         </a>
@@ -86,6 +85,16 @@
             });
             el.classList.add('active');
         }
+
+        // Écouteur pour recevoir les ordres de changement de page (ex: depuis Chercher vers Chrono)
+        window.addEventListener('message', function(event) {
+            if (event.data.type === 'setTargetFrame') {
+                const frame = document.getElementById('content-frame');
+                frame.src = 'pages/chrono.html';
+                // On met aussi à jour l'état visuel du bouton Chrono
+                setActive(document.querySelectorAll('.nav-item')[2]);
+            }
+        });
     </script>
 </body>
 </html>
