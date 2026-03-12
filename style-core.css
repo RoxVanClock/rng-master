@@ -1,5 +1,5 @@
 /**
- * STYLE-CORE.CSS - Version Couleurs Harmonisées
+ * STYLE-CORE.CSS - Version Couleurs Harmonisées + Navigation App
  */
 :root {
     --bg: #1a1a1a;
@@ -9,21 +9,67 @@
     --game-color: #2ecc71; 
 }
 
+/* Base */
 html, body {
     background: var(--bg);
     color: var(--text);
     font-family: sans-serif;
     margin: 0;
-    padding: 10px;
+    padding: 0; /* Changé à 0 pour l'index, on mettra du padding dans les cards */
     -webkit-tap-highlight-color: transparent;
     transition: all 0.3s ease;
+    height: 100dvh;
+    overflow: hidden; /* Empêche le scroll sur l'index total */
+    display: flex;
+    flex-direction: column;
 }
 
+/* Conteneur pour les pages (Iframes) */
+#content-frame {
+    flex: 1;
+    width: 100%;
+    border: none;
+    background: var(--bg);
+}
+
+/* BARRE DE NAVIGATION (Menu du bas) */
+.nav-bar {
+    height: 70px;
+    background: #121212;
+    display: flex;
+    width: 100%;
+    border-top: 1px solid #333;
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+.nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #888;
+    text-decoration: none;
+    font-size: 11px;
+    transition: 0.2s;
+}
+
+.nav-item.active {
+    color: var(--game-color);
+    background: rgba(46, 204, 113, 0.05);
+}
+
+.nav-icon {
+    font-size: 20px;
+    margin-bottom: 4px;
+}
+
+/* CONTENU DES PAGES (Appliqué à l'intérieur des cards dans les iframes) */
 .card {
     background: var(--card);
     padding: 20px;
     border-radius: 15px;
-    margin-bottom: 15px;
+    margin: 10px; /* Ajout d'une marge pour décoller des bords */
     box-shadow: 0 4px 10px rgba(0,0,0,0.3);
 }
 
@@ -83,6 +129,7 @@ input, select {
 
 .btn:active { transform: scale(0.98); }
 
+/* Spécifique Profils (Page Config) */
 .profile-item {
     padding: 15px;
     border-radius: 12px;
