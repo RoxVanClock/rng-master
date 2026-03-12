@@ -5,20 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="stylesheet" href="../style-core.css">
     <style>
-        /* La zone du chrono avec le flash intégré */
         .chrono-container {
             position: relative;
             width: 200px;
             height: 200px;
-            margin: 20px auto;
+            margin: 15px auto;
             border-radius: 50%;
-            background: #222;
-            border: 8px solid var(--game-color);
+            background: #1a1a1a;
+            border: 6px solid var(--game-color);
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             overflow: hidden;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
         }
         #flash-circle {
             position: absolute;
@@ -28,17 +28,11 @@
             pointer-events: none;
             z-index: 2;
         }
-        .timer-display { 
-            font-size: 3rem; 
-            font-family: monospace; 
-            color: var(--game-color); 
-            font-weight: bold;
-            z-index: 3;
-        }
-        .phase-name { font-size: 0.8rem; color: #888; z-index: 3; text-transform: uppercase; }
+        .timer-display { font-size: 3.2rem; font-family: monospace; color: var(--game-color); font-weight: bold; z-index: 3; }
+        .phase-name { font-size: 0.9rem; color: #888; z-index: 3; text-transform: uppercase; margin-bottom: 5px; }
+        #duration-info { font-size: 0.75rem; color: #555; margin-top: 5px; }
         
         .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .settings-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -49,7 +43,8 @@
             <div class="phase-name" id="phase-label">PRÊT</div>
             <div class="timer-display" id="timer-val">0.000</div>
         </div>
-        <div style="color: #666; font-size: 0.9rem;">PHASE COMPTÉE: <span id="count-val" style="color:var(--game-color); font-weight:bold;">0</span></div>
+        <div id="duration-info">Durée cible : 0 ms</div>
+        <div style="margin-top: 10px; color: #666; font-size: 0.9rem;">ESSAI N° <span id="count-val" style="color:var(--game-color); font-weight:bold;">0</span></div>
     </div>
 
     <div class="card">
@@ -65,32 +60,28 @@
         </div>
         
         <label>Target Frame</label>
-        <input type="number" id="target-frame" value="1000">
+        <input type="number" id="target-frame" value="1000" oninput="window.updateTargetInfo()">
 
-        <div class="settings-grid">
+        <div class="grid-inputs">
             <div>
-                <label>Bips (Nb)</label>
+                <label>Bips (Nombre)</label>
                 <input type="number" id="beep-count" value="5">
             </div>
             <div>
-                <label>Interval (ms)</label>
-                <input type="number" id="beep-interval" value="500">
-            </div>
-            <div style="display:flex; justify-content: space-around; align-items: center; padding-top: 20px;">
-                <label><input type="checkbox" id="enable-vibrate" checked> 📳</label>
-                <label><input type="checkbox" id="enable-sound" checked> 🔊</label>
+                <label>Déclenchement (s)</label>
+                <input type="number" id="beep-start" value="2" step="0.1">
             </div>
         </div>
 
-        <button class="btn" id="start-btn" onclick="window.toggleTimer()" style="margin-top:20px;">START / STOP</button>
+        <button class="btn" id="start-btn" onclick="window.toggleTimer()" style="margin-top:20px;">DÉMARRER</button>
     </div>
 
     <div class="card">
-        <h3>🎯 Calibration Rapide</h3>
+        <h3>🎯 Calibration</h3>
         <label>Frame Hit</label>
-        <input type="number" id="frame-hit" placeholder="Ex: 1002">
-        <button class="btn" style="background: #444; margin-top: 10px;" onclick="window.updateCalibration()">UPDATE CALIBRATION</button>
-        <button class="btn" onclick="window.resetCounter()" style="background:transparent; color:#666; font-size:0.8rem; margin-top:5px; border:none;">Réinitialiser Compteur</button>
+        <input type="number" id="frame-hit" placeholder="Cadre obtenu">
+        <button class="btn" style="background: #444; margin-top: 10px;" onclick="window.updateCalibration()">AJUSTER CALIBRATION</button>
+        <button class="btn" onclick="window.resetCounter()" style="background:transparent; color:#666; font-size:0.8rem; margin-top:10px; border:none;">Reset Compteur</button>
     </div>
 
     <script src="../app-core.js"></script>
