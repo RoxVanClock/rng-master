@@ -4,11 +4,11 @@
     let endTime = 0;
     let currentPhase = "idle"; 
     let counter = 0;
-    let nextBeepThreshold = -1; 
-    let beepsRemaining = 0;
-    let beepInterval = 0;
-    const FPS_GBA = 59.7275;
+    
+    // Variables pour la gestion précise des bips
+    let beepTimes = []; 
 
+    const FPS_GBA = 59.7275;
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
     function checkIncomingFrame() {
@@ -54,6 +54,7 @@
             currentPhase = "PRE-TIMER";
             document.getElementById('phase-label').innerText = "PRE-TIMER";
             endTime = performance.now() + preTimer;
+            beepTimes = []; // Pas de bips complexes en pre-timer
         } else {
             startTargetPhase();
         }
@@ -66,17 +67,24 @@
         const target = parseInt(document.getElementById('target-frame').value) || 0;
         const calib = parseFloat(document.getElementById('calibration').value) || 0;
         const targetMs = (target / FPS_GBA * 1000) + calib;
-        endTime = performance.now() + targetMs;
+        
+        const now = performance.now();
+        endTime = now + targetMs;
 
-        // --- CALCUL DE L'INTERVALLE ---
+        // --- GÉNÉRATION DE LA LISTE DES MOMENTS DE BIPS ---
         const startSec = parseFloat(document.getElementById('beep-start').value) || 0;
         const totalBeeps = parseInt(document.getElementById('num-beeps').value) || 1;
         
-        beepsRemaining = totalBeeps;
-        // Si on veut 5 bips sur 2 secondes, on a 4 intervalles entre les bips
-        // Le 1er bip est à 2s, le dernier à 0s.
-        beepInterval = (totalBeeps > 1) ? (startSec * 1000) / (totalBeeps - 1) : 0;
-        nextBeepThreshold = startSec * 1000;
+        beepTimes = [];
+        if (totalBeeps > 1) {
+            // On calcule l'intervalle (ex: 2s / (5-1) = 0.5s)
+            const intervalMs = (startSec * 1000) / (totalBeeps - 1);
+            
+            // On enregistre chaque moment où un bip doit se produire (sauf le dernier à 0)
+            for (let i = 0; i < totalBeeps - 1; i++) {
+                beepTimes.push(startSec * 1000 - (i * intervalMs));
+            }
+        }
     }
 
     function updateDisplay() {
@@ -92,13 +100,13 @@
 
         document.getElementById('timer-val').innerText = (remaining / 1000).toFixed(3);
         
-        // Logique des bips proportionnels (on joue tous les bips sauf le dernier qui est géré par handlePhaseEnd)
-        if (currentPhase === "TARGET" && beepsRemaining > 1) {
-            if (remaining <= nextBeepThreshold) {
+        // --- VÉRIFICATION DES BIPS ---
+        if (currentPhase === "TARGET" && beepTimes.length > 0) {
+            // Si le temps restant est inférieur ou égal au prochain bip prévu
+            if (remaining <= beepTimes[0]) {
                 playBeep(440, 50);
                 flashCircle();
-                beepsRemaining--;
-                nextBeepThreshold -= beepInterval;
+                beepTimes.shift(); // On retire ce bip de la liste
             }
         }
 
@@ -118,7 +126,7 @@
         } else {
             counter++;
             document.getElementById('count-val').innerText = counter;
-            playBeep(1200, 200); // Bip final
+            playBeep(1200, 200); // BIP FINAL
             flashCircle();
             stopTimer();
         }
