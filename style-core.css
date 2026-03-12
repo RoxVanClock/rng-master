@@ -1,5 +1,5 @@
 /**
- * STYLE-CORE.CSS - Version Couleurs Harmonisées + Navigation App
+ * STYLE-CORE.CSS - Version Intégrale
  */
 :root {
     --bg: #1a1a1a;
@@ -9,31 +9,45 @@
     --game-color: #2ecc71; 
 }
 
-/* Base */
-html, body {
+* { 
+    box-sizing: border-box; 
+    -webkit-tap-highlight-color: transparent; 
+}
+
+/* --- CONFIGURATION DES DEUX TYPES DE BODY --- */
+
+/* 1. Le Body de l'index (Fixe, pas de scroll) */
+body.index-body {
     background: var(--bg);
-    color: var(--text);
-    font-family: sans-serif;
     margin: 0;
-    padding: 0; /* Changé à 0 pour l'index, on mettra du padding dans les cards */
-    -webkit-tap-highlight-color: transparent;
-    transition: all 0.3s ease;
+    padding: 0;
     height: 100dvh;
-    overflow: hidden; /* Empêche le scroll sur l'index total */
+    overflow: hidden;
     display: flex;
     flex-direction: column;
 }
 
-/* Conteneur pour les pages (Iframes) */
+/* 2. Le Body des pages (Config, Search, Chrono) - SCROLL AUTORISÉ */
+body:not(.index-body) {
+    background: var(--bg);
+    color: var(--text);
+    font-family: sans-serif;
+    margin: 0;
+    padding: 10px;
+    padding-bottom: 30px; /* Espace pour ne pas coller au menu */
+    overflow-y: auto; 
+    height: auto;
+    min-height: 100%;
+}
+
+/* --- INTERFACE COMMUNE --- */
+
 #content-frame {
     flex: 1;
     width: 100%;
     border: none;
     background: var(--bg);
 }
-
-/* BARRE DE NAVIGATION (Menu du bas) */
-/* ... Tes styles de cards et inputs existants ... */
 
 .nav-bar {
     height: 70px;
@@ -66,19 +80,19 @@ html, body {
     margin-bottom: 4px;
 }
 
-/* CONTENU DES PAGES (Appliqué à l'intérieur des cards dans les iframes) */
+/* --- COMPOSANTS DES PAGES --- */
+
 .card {
     background: var(--card);
     padding: 20px;
     border-radius: 15px;
-    margin: 10px; /* Ajout d'une marge pour décoller des bords */
+    margin-bottom: 15px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.3);
 }
 
 h3 { 
     margin-top: 0; 
     color: var(--game-color); 
-    transition: color 0.3s ease;
 }
 
 label {
@@ -100,23 +114,6 @@ input, select {
     box-sizing: border-box;
 }
 
-.checkbox-group {
-    display: flex;
-    align-items: center;
-    background: rgba(0,0,0,0.2);
-    padding: 15px;
-    border-radius: 10px;
-    margin-bottom: 20px;
-    border: 1px dashed #555;
-}
-
-.checkbox-group input[type="checkbox"] {
-    width: 25px !important;
-    height: 25px !important;
-    margin: 0 15px 0 0 !important;
-    flex-shrink: 0;
-}
-
 .btn {
     background: var(--game-color);
     color: white;
@@ -126,39 +123,18 @@ input, select {
     border-radius: 10px;
     font-weight: bold;
     cursor: pointer;
-    transition: background-color 0.3s ease;
 }
 
 .btn:active { transform: scale(0.98); }
 
-/* Spécifique Profils (Page Config) */
 .profile-item {
     padding: 15px;
     border-radius: 12px;
     margin-bottom: 10px;
     background: #1e1e1e;
     border: 2px solid #333;
-    transition: 0.2s;
-    min-height: 80px;
-    position: relative;
 }
 
 .profile-item.active {
     border-color: var(--game-color);
-    background: #252525;
 }
-
-.action-btn {
-    background: #333;
-    border: none;
-    color: white;
-    padding: 10px;
-    border-radius: 8px;
-    width: 45px;
-    height: 45px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
