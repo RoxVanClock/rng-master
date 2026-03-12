@@ -4,61 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>RNG Master Pro</title>
-    <style>
-        /* RESET TOTAL POUR ÉVITER LES LIENS BLEUS */
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        
-        html, body {
-            height: 100dvh;
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            background: #1a1a1a;
-            font-family: sans-serif;
-        }
-
-        #content-frame {
-            flex: 1;
-            width: 100%;
-            border: none;
-            background: #1a1a1a;
-        }
-
-        /* BARRE DE NAVIGATION STYLE APPLI MOBILE */
-        .nav-bar {
-            height: 70px;
-            background: #121212;
-            display: flex;
-            width: 100%;
-            border-top: 1px solid #333;
-            padding-bottom: env(safe-area-inset-bottom);
-        }
-
-        .nav-item {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: #888;
-            text-decoration: none;
-            font-size: 11px;
-            transition: 0.2s;
-        }
-
-        /* Couleur quand l'onglet est sélectionné */
-        .nav-item.active {
-            color: #2ecc71;
-            background: rgba(46, 204, 113, 0.05);
-        }
-
-        .nav-icon {
-            font-size: 20px;
-            margin-bottom: 4px;
-        }
-    </style>
+    <link rel="stylesheet" href="style-core.css">
 </head>
 <body>
 
@@ -69,7 +15,7 @@
             <span class="nav-icon">⚙️</span>
             <span>Config</span>
         </a>
-        <a href="pages/search.html" target="content-frame" class="nav-item" onclick="setActive(this)">
+        <a href="pages/chercher.html" target="content-frame" class="nav-item" onclick="setActive(this)">
             <span class="nav-icon">🔍</span>
             <span>Chercher</span>
         </a>
@@ -79,13 +25,6 @@
         </a>
     </nav>
 
-    <script>
-        function setActive(el) {
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            el.classList.add('active');
-        }
-    </script>
+    <script src="app-core.js"></script>
 </body>
 </html>
