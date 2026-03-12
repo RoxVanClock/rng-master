@@ -1,5 +1,5 @@
 /**
- * SEARCH.JS - Calculs RNG et Communication
+ * SEARCH.JS - Calculs RNG Pokémon GBA
  */
 const NATURES = ["Hardi", "Solo", "Brave", "Rigide", "Mauvais", "Assuré", "Docile", "Relax", "Malin", "Lâche", "Timide", "Pressé", "Sérieux", "Jovial", "Naïf", "Modeste", "Doux", "Discret", "Prudent", "Foufou", "Calme", "Gentil", "Malpoli", "Bizarre", "Bizarre"];
 
@@ -10,20 +10,17 @@ function lcrng(seed) {
 function generateFrames() {
     const start = parseInt(document.getElementById('f-start').value);
     const end = parseInt(document.getElementById('f-end').value);
-    const tbody = document.getElementById('results-body');
+    const tbody = document.querySelector("#results-table tbody");
     const profiles = JSON.parse(localStorage.getItem('rng_profiles') || "[]");
     const activeId = localStorage.getItem('rng_active_id');
     const profile = profiles.find(p => p.id == activeId);
 
-    if (!profile) return alert("Veuillez sélectionner un profil dans l'onglet Config !");
+    if (!profile) return alert("Choisis un profil dans l'onglet Config !");
 
     tbody.innerHTML = "";
     document.getElementById('results-area').style.display = "block";
 
-    let seed = 0n; // Émeraude / Pile morte
-    // Si tu veux gérer des seeds différentes (Rubis/Saphir pile OK), on l'ajoutera ici.
-
-    // Avancer la seed jusqu'à la frame de départ
+    let seed = 0n; // Emerald / Dead Battery
     for(let i = 0; i < start; i++) seed = lcrng(seed);
 
     let html = "";
@@ -35,15 +32,14 @@ function generateFrames() {
         
         const pid = (p2 << 16) | p1;
         const nature = NATURES[pid % 25];
-        
-        // Calcul Shiny
         const shinyValue = (parseInt(profile.tid) ^ parseInt(profile.sid)) ^ (p1 ^ p2);
         const isShiny = shinyValue < 8;
 
-        html += `<tr class="${isShiny ? 'shiny-row' : ''}">
+        html += `<tr class="${isShiny ? 'shiny' : ''}">
             <td>${f} ${isShiny ? '✨' : ''}</td>
-            <td>${nature}</td>
             <td>${pid.toString(16).toUpperCase()}</td>
+            <td>${nature}</td>
+            <td>-</td>
             <td><button class="btn-mini" onclick="sendToChrono(${f})">TIMER</button></td>
         </tr>`;
     }
@@ -51,18 +47,19 @@ function generateFrames() {
 }
 
 function sendToChrono(frameValue) {
-    // Envoie la frame à index.html
+    // Parle à l'index pour changer de page et transmettre la frame
     window.parent.postMessage({ type: 'setTargetFrame', value: frameValue }, '*');
 }
 
-// Info profil au chargement
 window.addEventListener('DOMContentLoaded', () => {
     const profiles = JSON.parse(localStorage.getItem('rng_profiles') || "[]");
     const activeId = localStorage.getItem('rng_active_id');
     const profile = profiles.find(p => p.id == activeId);
-    if(profile) {
-        document.getElementById('active-info').innerText = `Profil: ${profile.name} (TID: ${profile.tid})`;
+    const info = document.getElementById('active-info');
+    
+    if (profile) {
+        info.innerText = `Profil actif : ${profile.name} (TID: ${profile.tid})`;
     } else {
-        document.getElementById('active-info').innerHTML = "<b style='color:#e74c3c;'>⚠️ Aucun profil actif</b>";
+        info.innerHTML = "<b style='color:#e74c3c;'>⚠️ Aucun profil sélectionné !</b>";
     }
 });
