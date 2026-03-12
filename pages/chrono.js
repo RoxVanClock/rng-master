@@ -1,3 +1,6 @@
+/**
+ * CHRONO.JS - Logique du Timer
+ */
 (function() {
     let isRunning = false;
     let timerTimeout = null;
@@ -9,13 +12,23 @@
 
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
+    // --- NOUVEAU : Récupération de la frame envoyée par Search ---
+    function checkIncomingFrame() {
+        const incomingFrame = localStorage.getItem('temp_target_frame');
+        if (incomingFrame) {
+            document.getElementById('target-frame').value = incomingFrame;
+            // On nettoie pour ne pas la re-remplir par erreur plus tard
+            localStorage.removeItem('temp_target_frame');
+            window.updateTargetInfo();
+        }
+    }
+
     window.updateTargetInfo = function() {
         const target = parseInt(document.getElementById('target-frame').value) || 0;
         const calib = parseFloat(document.getElementById('calibration').value) || 0;
         const ms = (target / FPS_GBA * 1000) + calib;
         document.getElementById('duration-info').innerText = `Durée cible : ${Math.round(ms)} ms`;
     };
-    window.updateTargetInfo();
 
     function playBeep(freq, duration) {
         if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -30,54 +43,53 @@
         
         osc.start();
         gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration/1000);
-        setTimeout(() => osc.stop(), duration);
-        
-        triggerFlash(); // Flash lié au son !
-    }
-
-    function triggerFlash() {
-        const flash = document.getElementById('flash-circle');
-        flash.style.opacity = "0.8";
-        setTimeout(() => { flash.style.opacity = "0"; }, 60);
+        osc.stop(audioCtx.currentTime + duration/1000);
     }
 
     window.toggleTimer = function() {
-        if (isRunning) stopTimer(); else startTimer();
-    };
-
-    window.resetCounter = function() {
-        counter = 0;
-        document.getElementById('count-val').innerText = "0";
+        if (isRunning) {
+            stopTimer();
+        } else {
+            startTimer();
+        }
     };
 
     function startTimer() {
         isRunning = true;
         beepsPlayed = 0;
+        const target = parseInt(document.getElementById('target-frame').value) || 0;
+        const calib = parseFloat(document.getElementById('calibration').value) || 0;
+        const preTimer = parseInt(document.getElementById('pre-timer').value) || 0;
+
+        const targetMs = (target / FPS_GBA * 1000) + calib;
+        
         document.getElementById('start-btn').innerText = "STOP";
         document.getElementById('start-btn').style.background = "#e74c3c";
-        
-        const preMs = parseFloat(document.getElementById('pre-timer').value) || 0;
-        if (preMs > 0) runPhase("PRE-TIMER", preMs); else startTargetPhase();
-    }
 
-    function runPhase(phase, duration) {
-        currentPhase = phase;
-        beepsPlayed = 0;
-        document.getElementById('phase-label').innerText = phase;
-        endTime = Date.now() + duration;
-        updateDisplay();
+        if (preTimer > 0) {
+            currentPhase = "PRE-TIMER";
+            document.getElementById('phase-label').innerText = "PRE-TIMER";
+            endTime = performance.now() + preTimer;
+        } else {
+            startTargetPhase();
+        }
+        
+        requestAnimationFrame(updateDisplay);
     }
 
     function startTargetPhase() {
-        const calib = parseFloat(document.getElementById('calibration').value) || 0;
+        currentPhase = "TARGET";
+        document.getElementById('phase-label').innerText = "TARGET";
         const target = parseInt(document.getElementById('target-frame').value) || 0;
-        const duration = (target / FPS_GBA * 1000) + calib;
-        runPhase("TARGET", duration);
+        const calib = parseFloat(document.getElementById('calibration').value) || 0;
+        const targetMs = (target / FPS_GBA * 1000) + calib;
+        endTime = performance.now() + targetMs;
     }
 
     function updateDisplay() {
         if (!isRunning) return;
-        const now = Date.now();
+
+        const now = performance.now();
         const remaining = endTime - now;
 
         if (remaining <= 0) {
@@ -86,22 +98,28 @@
         }
 
         document.getElementById('timer-val').innerText = (remaining / 1000).toFixed(3);
-
-        // --- LOGIQUE DES BIPS (Inclus le dernier) ---
-        const totalBeeps = parseInt(document.getElementById('beep-count').value) || 1;
-        const startTime = parseFloat(document.getElementById('beep-start').value) * 1000;
         
-        // On divise le temps de déclenchement par (total - 1) pour que le dernier tombe sur 0
-        const interval = startTime / (totalBeeps - 1);
-        const nextBeepAt = startTime - (beepsPlayed * interval);
-
-        // On ne joue que les bips intermédiaires ici (beepsPlayed < totalBeeps - 1)
-        if (remaining <= nextBeepAt && beepsPlayed < totalBeeps - 1) {
-            beepsPlayed++;
-            playBeep(440, 50);
+        // Flash et Bips (les 6 derniers)
+        const totalBeeps = 6;
+        const interval = 1000; 
+        const timeIntoBeeps = (totalBeeps - 1) * interval;
+        
+        if (remaining < timeIntoBeeps && beepsPlayed < totalBeeps - 1) {
+            const currentBeepThreshold = (totalBeeps - 1 - beepsPlayed) * interval;
+            if (remaining < currentBeepThreshold) {
+                beepsPlayed++;
+                playBeep(440, 50);
+                flashCircle();
+            }
         }
 
         timerTimeout = requestAnimationFrame(updateDisplay);
+    }
+
+    function flashCircle() {
+        const flash = document.getElementById('flash-circle');
+        flash.style.opacity = "0.5";
+        setTimeout(() => flash.style.opacity = "0", 50);
     }
 
     function handlePhaseEnd() {
@@ -111,7 +129,7 @@
         } else {
             counter++;
             document.getElementById('count-val').innerText = counter;
-            playBeep(1200, 200); // Le BIP final (le dernier du total)
+            playBeep(1200, 200);
             stopTimer();
         }
     }
@@ -132,8 +150,18 @@
         if (!hit) return;
 
         const diff = target - hit;
-        const newCalib = Math.round(currentCalib + ((diff / FPS_GBA) * 1000));
-        document.getElementById('calibration').value = newCalib;
+        const msDiff = (diff / FPS_GBA) * 1000;
+        document.getElementById('calibration').value = (currentCalib + msDiff).toFixed(0);
         window.updateTargetInfo();
     };
+
+    window.resetCounter = function() {
+        counter = 0;
+        document.getElementById('count-val').innerText = "0";
+    };
+
+    // Initialisation
+    window.updateTargetInfo();
+    checkIncomingFrame();
+
 })();
