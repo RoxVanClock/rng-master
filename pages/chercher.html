@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" href="../style-core.css">
+    <style>
+        .search-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .results-container { width: 100%; overflow-x: auto; margin-top: 15px; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        th { background: #333; color: var(--game-color); padding: 10px; text-align: left; position: sticky; top: 0; }
+        td { padding: 8px; border-bottom: 1px solid #333; text-align: left; }
+        .shiny-row { background: rgba(255, 215, 0, 0.1) !important; color: #ffd700; }
+        .btn-send { background: var(--game-color); color: #000; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.7rem; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h3>🔍 Recherche de Frames</h3>
+        <div class="search-grid">
+            <div>
+                <label>Frame Début</label>
+                <input type="number" id="frame-start" value="0">
+            </div>
+            <div>
+                <label>Frame Fin</label>
+                <input type="number" id="frame-end" value="5000">
+            </div>
+        </div>
+
+        <div class="search-grid">
+            <div>
+                <label>Méthode</label>
+                <select id="method-select" style="width:100%; padding:8px; background:#333; color:white; border:none; border-radius:4px;">
+                    <option value="1">Méthode 1 (Fixe/Légendaire)</option>
+                    <option value="H">Méthode H (Sauvage - RS)</option>
+                    <option value="J">Méthode J (Sauvage - E)</option>
+                </select>
+            </div>
+            <div style="display:flex; align-items:flex-end;">
+                <button class="btn" onclick="window.runSearch()">RECHERCHER</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card" style="padding: 5px;">
+        <div class="results-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Frame</th>
+                        <th>Nature</th>
+                        <th>IVs</th>
+                        <th>Shiny</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="results-body">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="../app-core.js"></script>
+    <script src="chercher.js"></script>
+</body>
+</html>
