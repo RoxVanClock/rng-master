@@ -1,14 +1,10 @@
-/**
- * CHRONO.JS - Logique Personnalisée des Bips
- */
 (function() {
     let isRunning = false;
     let timerTimeout = null;
     let endTime = 0;
     let currentPhase = "idle"; 
     let counter = 0;
-    let nextBeepThreshold = 0; 
-    let beepsToPlay = 0;
+    let nextBeepTime = -1; 
     const FPS_GBA = 59.7275;
 
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -56,8 +52,7 @@
             currentPhase = "PRE-TIMER";
             document.getElementById('phase-label').innerText = "PRE-TIMER";
             endTime = performance.now() + preTimer;
-            // Pour le pre-timer, on peut mettre des bips fixes ou aucun
-            nextBeepThreshold = -1; 
+            nextBeepTime = -1; 
         } else {
             startTargetPhase();
         }
@@ -70,15 +65,11 @@
         const target = parseInt(document.getElementById('target-frame').value) || 0;
         const calib = parseFloat(document.getElementById('calibration').value) || 0;
         const targetMs = (target / FPS_GBA * 1000) + calib;
-        
         endTime = performance.now() + targetMs;
 
-        // --- CALCUL DE LA SEQUENCE DE BIPS ---
+        // On définit le moment du premier bip (ex: 5000ms avant la fin)
         const startSec = parseInt(document.getElementById('beep-start').value) || 0;
-        beepsToPlay = parseInt(document.getElementById('num-beeps').value) || 0;
-        
-        // On définit le premier seuil de bip (ex: 5000ms)
-        nextBeepThreshold = startSec * 1000;
+        nextBeepTime = startSec * 1000;
     }
 
     function updateDisplay() {
@@ -94,20 +85,13 @@
 
         document.getElementById('timer-val').innerText = (remaining / 1000).toFixed(3);
         
-        // --- LOGIQUE DES BIPS ---
-        // Si on est en phase TARGET et qu'on a encore des bips à jouer (sauf le dernier)
-        if (currentPhase === "TARGET" && beepsToPlay > 1) {
-            if (remaining <= nextBeepThreshold) {
+        // LOGIQUE : Si on est en TARGET et que le temps restant passe sous le seuil du prochain bip
+        if (currentPhase === "TARGET" && nextBeepTime > 0) {
+            if (remaining <= nextBeepTime) {
                 playBeep(440, 50);
                 flashCircle();
-                beepsToPlay--;
-                // Calcule le prochain seuil (intervalle régulier jusqu'à 0)
-                // Si on commence à 5s pour 6 bips, on bippe toutes les 5/(6-1) = 1s
-                const startSec = parseInt(document.getElementById('beep-start').value);
-                const totalBeeps = parseInt(document.getElementById('num-beeps').value);
-                const interval = (startSec * 1000) / (totalBeeps - 1);
-                
-                nextBeepThreshold -= interval;
+                // On descend exactement de 1 seconde pour le prochain bip
+                nextBeepTime -= 1000; 
             }
         }
 
@@ -127,7 +111,7 @@
         } else {
             counter++;
             document.getElementById('count-val').innerText = counter;
-            playBeep(1200, 200); // Le BIP Final
+            playBeep(1200, 200); 
             flashCircle();
             stopTimer();
         }
@@ -151,11 +135,6 @@
         const msDiff = (diff / FPS_GBA) * 1000;
         document.getElementById('calibration').value = (currentCalib + msDiff).toFixed(0);
         window.updateTargetInfo();
-    };
-
-    window.resetCounter = function() {
-        counter = 0;
-        document.getElementById('count-val').innerText = "0";
     };
 
     window.updateTargetInfo();
