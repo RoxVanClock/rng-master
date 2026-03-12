@@ -2,61 +2,57 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recherche RNG - Master</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="stylesheet" href="../style-core.css">
     <style>
-        /* Styles spécifiques à l'affichage des résultats */
-        .results-scroll { max-height: 450px; overflow-y: auto; margin-top: 15px; border-radius: 8px; }
-        table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th { position: sticky; top: 0; background: var(--card); padding: 10px; text-align: left; border-bottom: 2px solid var(--game-color); }
-        td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .shiny { background: rgba(255, 215, 0, 0.1) !important; color: gold; font-weight: bold; }
+        .results-scroll { max-height: 400px; overflow-y: auto; margin-top: 15px; border-radius: 8px; background: #111; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        th { position: sticky; top: 0; background: #333; color: var(--game-color); padding: 10px; text-align: left; z-index: 10; }
+        td { padding: 10px 8px; border-bottom: 1px solid #222; }
+        .shiny-row { background: rgba(255, 215, 0, 0.15) !important; color: #ffd700; font-weight: bold; }
+        .btn-mini { background: var(--game-color); color: black; border: none; padding: 5px 10px; border-radius: 4px; font-size: 0.7rem; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
-
     <div class="card">
-        <h3>🔍 Recherche Sauvage</h3>
-        <p id="active-info" style="font-size: 0.8em; opacity: 0.7;">Vérification du profil...</p>
+        <h3>🔍 Recherche de Frames</h3>
+        <p id="active-info" style="font-size: 0.8rem; color: #888;">Chargement du profil...</p>
 
-        <div style="display: flex; gap: 10px;">
-            <div style="flex:1;">
-                <label>Frame Début</label>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div>
+                <label>Début</label>
                 <input type="number" id="f-start" value="0">
             </div>
-            <div style="flex:1;">
-                <label>Frame Fin</label>
+            <div>
+                <label>Fin</label>
                 <input type="number" id="f-end" value="5000">
             </div>
         </div>
 
-        <label>Méthode de génération</label>
+        <label>Méthode</label>
         <select id="method">
-            <option value="h1">Méthode H1 (RS Standard)</option>
+            <option value="h1">Méthode H1 (RS - Fixe)</option>
             <option value="h2">Méthode H2 (Émeraude)</option>
-            <option value="h4">Méthode H4 (FRLG / RS)</option>
+            <option value="h4">Méthode H4 (FRLG / RS Sauvage)</option>
         </select>
 
-        <button class="btn" onclick="generateFrames()" style="margin-top: 15px;">CALCULER LES RÉSULTATS</button>
+        <button class="btn" onclick="generateFrames()">CALCULER LES RÉSULTATS</button>
     </div>
 
-    <div id="results-area" class="card results-scroll" style="display:none;">
-        <table id="results-table">
+    <div id="results-area" class="card results-scroll" style="display:none; padding: 0;">
+        <table>
             <thead>
                 <tr>
                     <th>Frame</th>
-                    <th>PID</th>
                     <th>Nature</th>
-                    <th>Slot</th>
-                    <th>Shiny</th>
+                    <th>PID</th>
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody id="results-body"></tbody>
         </table>
     </div>
 
-    <script src="../app-core.js"></script>
     <script src="search.js"></script>
 </body>
 </html>
