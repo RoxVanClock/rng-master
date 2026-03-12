@@ -18,54 +18,53 @@
         }
         .timer-display { font-size: 3.2rem; font-family: monospace; color: var(--game-color); font-weight: bold; z-index: 3; }
         .phase-name { font-size: 0.9rem; color: #888; z-index: 3; text-transform: uppercase; }
-        #duration-info { font-size: 0.75rem; color: #555; margin-top: 5px; }
-        .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        #duration-info { text-align: center; font-size: 0.8rem; color: #666; margin-bottom: 10px; }
+        .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
     </style>
 </head>
 <body>
 
-    <div class="card" style="text-align: center;">
+    <div class="card">
+        <div id="duration-info">Durée cible : 0 ms</div>
         <div class="chrono-container">
             <div id="flash-circle"></div>
-            <div class="phase-name" id="phase-label">PRÊT</div>
-            <div class="timer-display" id="timer-val">0.000</div>
+            <div id="phase-label" class="phase-name">PRÊT</div>
+            <div id="timer-val" class="timer-display">0.000</div>
+            <div style="color: #444; font-size: 0.8rem;">COUNT: <span id="count-val">0</span></div>
         </div>
-        <div id="duration-info">Durée : 0 ms</div>
-    </div>
 
-    <div class="card">
         <div class="grid-inputs">
             <div>
                 <label>Target Frame</label>
-                <input type="number" id="target-frame" value="1000" oninput="window.updateTargetInfo()">
+                <input type="number" id="target-frame" value="5000" oninput="window.updateTargetInfo()">
             </div>
             <div>
-                <label>Calibration</label>
+                <label>Calibration (ms)</label>
                 <input type="number" id="calibration" value="0" oninput="window.updateTargetInfo()">
             </div>
         </div>
 
         <div class="grid-inputs">
             <div>
-                <label>Bips (Total)</label>
-                <input type="number" id="beep-count" value="5">
+                <label>Bips</label>
+                <input type="number" id="num-beeps" value="6">
             </div>
             <div>
                 <label>Début Bips (s)</label>
-                <input type="number" id="beep-start" value="2" step="0.1">
+                <input type="number" id="beep-start" value="5">
             </div>
         </div>
 
         <div class="grid-inputs">
             <div>
                 <label>Type de Son</label>
-                <select id="beep-type" style="width:100%; padding:8px; border-radius:4px; background:#333; color:white; border:none;">
+                <select id="beep-type">
                     <option value="square">Retro (GBA)</option>
                     <option value="sine">Doux</option>
                     <option value="sawtooth">Tranchant</option>
                 </select>
             </div>
-            <div style="display:flex; flex-direction:column; justify-content:flex-end;">
+            <div>
                 <label>Pre-Timer (ms)</label>
                 <input type="number" id="pre-timer" value="0">
             </div>
@@ -77,12 +76,11 @@
     <div class="card">
         <h3>🎯 Calibration Rapide</h3>
         <label>Frame Hit</label>
-        <input type="number" id="frame-hit" placeholder="Ex: 1002">
-        <button class="btn" style="background: #444; margin-top: 10px;" onclick="window.updateCalibration()">AJUSTER</button>
-        <button class="btn" onclick="window.resetCounter()" style="background:transparent; color:#666; font-size:0.8rem; margin-top:10px; border:none;">Reset Essais (<span id="count-val">0</span>)</button>
+        <input type="number" id="frame-hit" placeholder="Ex: 5002">
+        <button class="btn" style="background: #444; margin-top: 10px;" onclick="window.updateCalibration()">AJUSTER LA CALIBRATION</button>
+        <button class="btn" onclick="window.resetCounter()" style="background:transparent; color:#666; margin-top:10px; font-size: 0.8rem;">Réinitialiser le compteur</button>
     </div>
 
-    <script src="../app-core.js"></script>
     <script src="chrono.js"></script>
 </body>
 </html>
