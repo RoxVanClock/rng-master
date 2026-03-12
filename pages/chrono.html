@@ -36,7 +36,7 @@
         <div class="grid-inputs">
             <div>
                 <label>Target Frame</label>
-                <input type="number" id="target-frame" value="5000" oninput="window.updateTargetInfo()">
+                <input type="number" id="target-frame" value="300" oninput="window.updateTargetInfo()">
             </div>
             <div>
                 <label>Calibration (ms)</label>
@@ -76,9 +76,8 @@
     <div class="card">
         <h3>🎯 Calibration Rapide</h3>
         <label>Frame Hit</label>
-        <input type="number" id="frame-hit" placeholder="Ex: 5002">
+        <input type="number" id="frame-hit" placeholder="Ex: 302">
         <button class="btn" style="background: #444; margin-top: 10px;" onclick="window.updateCalibration()">AJUSTER LA CALIBRATION</button>
-        <button class="btn" onclick="window.resetCounter()" style="background:transparent; color:#666; margin-top:10px; font-size: 0.8rem;">Réinitialiser le compteur</button>
     </div>
 
     <script src="chrono.js"></script>
