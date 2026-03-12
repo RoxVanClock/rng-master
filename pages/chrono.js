@@ -8,8 +8,17 @@
     const FPS_GBA = 59.7275;
 
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    // Affiche la durée en ms dès qu'on change la frame
+    window.updateTargetInfo = function() {
+        const target = parseInt(document.getElementById('target-frame').value) || 0;
+        const calib = parseFloat(document.getElementById('calibration').value) || 0;
+        const ms = (target / FPS_GBA * 1000) + calib;
+        document.getElementById('duration-info').innerText = `Durée cible : ${Math.round(ms)} ms`;
+    };
+    window.updateTargetInfo(); // Initialisation
+
     function playBeep(freq, duration) {
-        if (!document.getElementById('enable-sound').checked) return;
         if (audioCtx.state === 'suspended') audioCtx.resume();
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
@@ -40,6 +49,7 @@
     function startTimer() {
         isRunning = true;
         beepsPlayed = 0;
+        document.getElementById('start-btn').innerText = "STOP";
         document.getElementById('start-btn').style.background = "#e74c3c";
         
         const preMs = parseFloat(document.getElementById('pre-timer').value) || 0;
@@ -73,18 +83,17 @@
 
         document.getElementById('timer-val').innerText = (remaining / 1000).toFixed(3);
 
-        // --- LOGIQUE DES BIPS (Intervalle de EonTimer) ---
-        const totalBeeps = parseInt(document.getElementById('beep-count').value);
-        const interval = parseInt(document.getElementById('beep-interval').value);
+        // --- NOUVELLE LOGIQUE DES BIPS ---
+        const totalBeeps = parseInt(document.getElementById('beep-count').value) || 1;
+        const startTime = parseFloat(document.getElementById('beep-start').value) * 1000; // Déclenchement en ms
         
-        // On calcule quand le prochain bip doit sonner
-        // Exemple : si on veut 5 bips tous les 500ms, le premier est à 2500ms
-        const nextBeepTime = (totalBeeps - beepsPlayed) * interval;
+        // Intervalle calculé selon le temps de départ choisi
+        const interval = startTime / totalBeeps;
+        const nextBeepAt = startTime - (beepsPlayed * interval);
 
-        if (remaining <= nextBeepTime) {
+        if (remaining <= nextBeepAt && beepsPlayed < totalBeeps) {
             beepsPlayed++;
             playBeep(440, 50);
-            if(document.getElementById('enable-vibrate').checked) navigator.vibrate(40);
         }
 
         timerTimeout = requestAnimationFrame(updateDisplay);
@@ -99,7 +108,6 @@
             counter++;
             document.getElementById('count-val').innerText = counter;
             playBeep(1200, 200);
-            if(document.getElementById('enable-vibrate').checked) navigator.vibrate([100, 50, 100]);
             stopTimer();
         }
     }
@@ -107,6 +115,7 @@
     function stopTimer() {
         isRunning = false;
         cancelAnimationFrame(timerTimeout);
+        document.getElementById('start-btn').innerText = "DÉMARRER";
         document.getElementById('start-btn').style.background = "var(--game-color)";
         document.getElementById('phase-label').innerText = "PRÊT";
         document.getElementById('timer-val').innerText = "0.000";
@@ -121,6 +130,7 @@
         const diff = target - hit;
         const newCalib = Math.round(currentCalib + ((diff / FPS_GBA) * 1000));
         document.getElementById('calibration').value = newCalib;
+        window.updateTargetInfo();
         playBeep(600, 50);
     };
 })();
