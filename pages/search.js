@@ -1,5 +1,5 @@
 /**
- * MASTER SEARCH ENGINE - FINAL SYNC
+ * MASTER SEARCH ENGINE - PROFILE FIX
  */
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -9,21 +9,35 @@ window.addEventListener('DOMContentLoaded', () => {
     updateMethodContext();
 });
 
-// Cette fonction force la synchronisation avec l'onglet Config
 function syncActiveProfile() {
     const banner = document.getElementById('profile-banner');
-    const activeProfile = JSON.parse(localStorage.getItem('rng_active_profile'));
+    
+    // Tentative 1 : Chercher la clé directe
+    let activeProfile = JSON.parse(localStorage.getItem('rng_active_profile'));
+
+    // Tentative 2 : Si vide, chercher dans la liste globale des profils
+    if (!activeProfile) {
+        const allProfiles = JSON.parse(localStorage.getItem('rng_profiles')) || [];
+        // On prend le premier profil ou celui qui contient "Emeraude" si disponible
+        activeProfile = allProfiles.find(p => p.active === true) || allProfiles[0];
+        
+        if (activeProfile) {
+            localStorage.setItem('rng_active_profile', JSON.stringify(activeProfile));
+        }
+    }
 
     if (activeProfile && activeProfile.name) {
-        banner.style.background = "rgba(46, 204, 113, 0.1)";
-        banner.style.border = "1px solid #2ecc71";
-        banner.innerHTML = `<b style="color:#2ecc71;">✅ Profil : ${activeProfile.name}</b><br>
-                            <span style="opacity:0.8; font-size:0.75rem;">TID: ${activeProfile.tid} | SID: ${activeProfile.sid}</span>`;
+        banner.style.backgroundColor = "rgba(46, 204, 113, 0.1)";
+        banner.style.borderColor = "#2ecc71";
+        banner.style.color = "#2ecc71";
+        banner.innerHTML = `<b>✅ Profil : ${activeProfile.name}</b><br>
+                            <span style="color:#eee; font-size:0.75rem;">TID: ${activeProfile.tid} | SID: ${activeProfile.sid}</span>`;
     } else {
-        banner.style.background = "rgba(231, 76, 60, 0.1)";
-        banner.style.border = "1px solid #e74c3c";
-        banner.innerHTML = `<b style="color:#e74c3c;">⚠️ Aucun profil actif !</b><br>
-                            <span style="opacity:0.8; font-size:0.75rem;">Configurez un profil dans l'onglet Config.</span>`;
+        banner.style.backgroundColor = "rgba(231, 76, 60, 0.1)";
+        banner.style.borderColor = "#e74c3c";
+        banner.style.color = "#e74c3c";
+        banner.innerHTML = `<b>⚠️ Aucun profil trouvé</b><br>
+                            <span style="color:#eee; font-size:0.75rem;">Créez ou importez un profil dans l'onglet Config.</span>`;
     }
 }
 
@@ -65,7 +79,7 @@ function lcrng(seed) {
 function generateFrames() {
     const active = JSON.parse(localStorage.getItem('rng_active_profile'));
     if (!active) {
-        alert("Erreur : Aucun profil sélectionné dans l'onglet Config !");
+        alert("Veuillez sélectionner un profil actif dans l'onglet Config !");
         return;
     }
 
