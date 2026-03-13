@@ -1,5 +1,5 @@
 /**
- * CONFIG.JS - Gestion Profils + Import/Export
+ * CONFIG.JS - Gestion Profils + État de la Pile + Import/Export
  */
 
 const GAME_COLORS = {
@@ -50,7 +50,7 @@ function saveProfile() {
     }
 
     localStorage.setItem('rng_profiles', JSON.stringify(profiles));
-    // On définit le profil créé/modifié comme actif immédiatement
+    // Définit automatiquement le profil comme actif
     localStorage.setItem('rng_active_profile', JSON.stringify(profileData));
     
     resetForm();
@@ -72,26 +72,32 @@ function displayProfiles() {
         } catch(e) { activeProfile = null; }
     }
 
-    // Affichage du bandeau Profil Actif
+    // 1. Mise à jour du bandeau Profil Actif
     if (activeProfile && activeProfile.name) {
         activeBox.style.display = "block";
         updateThemeColor(activeProfile.game);
+        const batteryStatus = activeProfile.isDeadBattery ? "🪫 Pile Morte / Seed 0" : "🔋 Pile OK / Seed Variable";
         activeInfo.innerHTML = `
             <div style="color: var(--game-color); font-weight: bold;">${activeProfile.name}</div>
             <div style="font-size: 0.8rem; color: #eee;">TID: ${activeProfile.tid} | SID: ${activeProfile.sid}</div>
+            <div style="font-size: 0.7rem; color: #888; margin-top: 4px;">${batteryStatus}</div>
         `;
     } else {
         activeBox.style.display = "none";
     }
 
-    // Liste des profils
+    // 2. Liste des profils sauvegardés
     if (profiles.length === 0) {
         list.innerHTML = "<p style='text-align:center; color:#666; font-size:0.8rem;'>Aucun profil enregistré.</p>";
         return;
     }
 
     list.innerHTML = profiles.map((p, i) => {
-        const isActive = activeProfile && (p.id === p.id && p.name === activeProfile.name);
+        const isActive = activeProfile && (p.id === activeProfile.id);
+        const batteryBadge = p.isDeadBattery 
+            ? `<span style="color: #e74c3c; font-size: 0.7rem; background: rgba(231, 76, 60, 0.1); padding: 2px 5px; border-radius: 4px;">🪫 Pile Morte</span>` 
+            : `<span style="color: #2ecc71; font-size: 0.7rem; background: rgba(46, 204, 113, 0.1); padding: 2px 5px; border-radius: 4px;">🔋 Pile OK</span>`;
+
         return `
             <div onclick="selectProfile('${p.id}')" class="profile-item" 
                  style="border: 1px solid ${isActive ? 'var(--game-color)' : '#333'}; 
@@ -99,8 +105,11 @@ function displayProfiles() {
                         background: ${isActive ? 'rgba(255,255,255,0.05)' : '#1a1a1a'};">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <div style="flex:1;">
-                        <strong style="color:${isActive ? 'var(--game-color)' : '#fff'}">${p.name}</strong><br>
-                        <small style="color:#888;">TID: ${p.tid} | SID: ${p.sid}</small>
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                            <strong style="color:${isActive ? 'var(--game-color)' : '#fff'}">${p.name}</strong>
+                            ${batteryBadge}
+                        </div>
+                        <small style="color:#888;">TID: ${p.tid} | SID: ${p.sid} | ${p.game.toUpperCase()}</small>
                     </div>
                     <div style="display:flex; gap:10px;">
                         <button class="action-btn" onclick="handleEdit(event, ${i})">✏️</button>
@@ -121,7 +130,7 @@ function selectProfile(id) {
     }
 }
 
-// --- IMPORT / EXPORT ---
+// --- FONCTIONS IMPORT / EXPORT ---
 
 function exportProfiles() {
     const profiles = localStorage.getItem('rng_profiles') || "[]";
@@ -161,7 +170,7 @@ function handleFileSelect(event) {
     reader.readAsText(file);
 }
 
-// --- ACTIONS ---
+// --- ACTIONS ET UTILITAIRES ---
 
 function handleEdit(event, index) {
     event.stopPropagation();
@@ -183,10 +192,7 @@ function handleDelete(event, index) {
     let profiles = JSON.parse(localStorage.getItem('rng_profiles') || "[]");
     profiles.splice(index, 1);
     localStorage.setItem('rng_profiles', JSON.stringify(profiles));
-    
-    // Si on supprime le profil actif, on vide la clé active
     localStorage.removeItem('rng_active_profile');
-    
     displayProfiles();
 }
 
@@ -195,5 +201,6 @@ function resetForm() {
     document.getElementById('prof-name').value = "";
     document.getElementById('prof-tid').value = "";
     document.getElementById('prof-sid').value = "";
+    document.getElementById('prof-dead-battery').checked = false;
     document.getElementById('form-title').innerText = "👤 Nouveau Profil";
 }
