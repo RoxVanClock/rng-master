@@ -10,32 +10,29 @@
             padding: 15px; cursor: pointer; color: var(--game-color); 
             font-weight: bold; list-style: none; display: flex; justify-content: space-between; align-items: center;
         }
-        .main-config summary::after { content: '▼'; font-size: 0.7rem; transition: 0.3s; }
+        .main-config summary::after { content: '▼'; font-size: 0.7rem; }
         .main-config[open] summary::after { content: '▲'; }
         
         .config-body { padding: 0 15px 15px 15px; }
 
-        /* Bannière avec bouton Refresh */
-        .profile-banner-box { 
+        .profile-status { 
             display: flex; justify-content: space-between; align-items: center;
-            padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 0.85rem; border: 1px solid transparent;
-        }
-        .refresh-btn {
-            background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
-            color: white; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.7rem;
+            padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 0.85rem; border: 1px solid #444;
+            background: rgba(255,255,255,0.05);
         }
 
-        .nature-list-container {
+        /* Natures en liste verticale propre */
+        .nature-scroll {
             background: #111; border-radius: 8px; border: 1px solid #333;
-            max-height: 220px; overflow-y: auto; margin: 10px 0;
+            max-height: 200px; overflow-y: auto; margin: 10px 0;
         }
-        .nature-row {
+        .nature-item {
             display: flex; justify-content: space-between; align-items: center;
             padding: 12px 15px; border-bottom: 1px solid #222; color: #eee;
         }
-        .nature-row input { width: 22px; height: 22px; accent-color: var(--game-color); cursor: pointer; }
+        .nature-item input { width: 22px; height: 22px; accent-color: var(--game-color); }
 
-        .results-area { margin-top: 15px; background: #111; border-radius: 8px; overflow: hidden; border: 1px solid #333; }
+        .results-box { margin-top: 15px; background: #111; border-radius: 8px; border: 1px solid #333; overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; font-size: 11px; text-align: center; }
         th { background: #222; padding: 12px; border-bottom: 2px solid var(--game-color); color: #888; }
         td { padding: 12px; border-bottom: 1px solid #222; }
@@ -46,9 +43,9 @@
     <details class="main-config" open>
         <summary>🔍 CONFIGURATION</summary>
         <div class="config-body">
-            <div id="profile-banner" class="profile-banner-box">
-                <span>Chargement...</span>
-                <button class="refresh-btn" onclick="refreshProfileStatus()">🔄 ACTUALISER</button>
+            <div id="status-banner" class="profile-status">
+                <span>Initialisation...</span>
+                <button onclick="syncNow()" style="background:none; border:1px solid #555; color:white; padding:4px 8px; border-radius:4px; font-size:0.7rem;">ACTUALISER</button>
             </div>
 
             <div style="display: flex; gap: 10px;">
@@ -63,16 +60,16 @@
             </select>
 
             <label style="margin-top:15px; display:block;">Filtrer par Natures</label>
-            <div id="nature-list" class="nature-list-container"></div>
+            <div id="nature-list" class="nature-scroll"></div>
 
-            <button class="btn" onclick="generateFrames()" style="width:100%; margin-top:10px; height: 50px;">LANCER LA RECHERCHE</button>
+            <button class="btn" onclick="runSearch()" style="width:100%; margin-top:15px; height: 50px; font-weight: bold;">LANCER LA RECHERCHE</button>
         </div>
     </details>
 
-    <div id="results-container" class="results-area" style="display:none;">
+    <div id="results-view" class="results-box" style="display:none;">
         <table>
             <thead>
-                <tr><th>Frame</th><th>Nature</th><th>IVs</th><th>Type</th></tr>
+                <tr><th>Frame</th><th>Nature</th><th>IVs</th><th>Statut</th></tr>
             </thead>
             <tbody id="results-body"></tbody>
         </table>
