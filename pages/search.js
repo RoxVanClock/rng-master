@@ -1,52 +1,40 @@
 /**
- * MASTER SEARCH ENGINE - PROFILE FIX
+ * MASTER SEARCH ENGINE - STRICT MODE
  */
 
 window.addEventListener('DOMContentLoaded', () => {
-    syncActiveProfile();
+    checkProfileStatus();
     initNatures();
     initLocations();
     updateMethodContext();
 });
 
-function syncActiveProfile() {
+function checkProfileStatus() {
     const banner = document.getElementById('profile-banner');
-    
-    // Tentative 1 : Chercher la clé directe
-    let activeProfile = JSON.parse(localStorage.getItem('rng_active_profile'));
+    const active = JSON.parse(localStorage.getItem('rng_active_profile'));
 
-    // Tentative 2 : Si vide, chercher dans la liste globale des profils
-    if (!activeProfile) {
-        const allProfiles = JSON.parse(localStorage.getItem('rng_profiles')) || [];
-        // On prend le premier profil ou celui qui contient "Emeraude" si disponible
-        activeProfile = allProfiles.find(p => p.active === true) || allProfiles[0];
-        
-        if (activeProfile) {
-            localStorage.setItem('rng_active_profile', JSON.stringify(activeProfile));
-        }
-    }
-
-    if (activeProfile && activeProfile.name) {
+    if (active && active.name) {
         banner.style.backgroundColor = "rgba(46, 204, 113, 0.1)";
         banner.style.borderColor = "#2ecc71";
         banner.style.color = "#2ecc71";
-        banner.innerHTML = `<b>✅ Profil : ${activeProfile.name}</b><br>
-                            <span style="color:#eee; font-size:0.75rem;">TID: ${activeProfile.tid} | SID: ${activeProfile.sid}</span>`;
+        banner.innerHTML = `<b>✅ Profil : ${active.name}</b><br>
+                            <span style="color:#eee; font-size:0.75rem;">TID: ${active.tid} | SID: ${active.sid}</span>`;
     } else {
         banner.style.backgroundColor = "rgba(231, 76, 60, 0.1)";
         banner.style.borderColor = "#e74c3c";
         banner.style.color = "#e74c3c";
-        banner.innerHTML = `<b>⚠️ Aucun profil trouvé</b><br>
-                            <span style="color:#eee; font-size:0.75rem;">Créez ou importez un profil dans l'onglet Config.</span>`;
+        banner.innerHTML = `<b>⚠️ Aucun profil sélectionné</b><br>
+                            <span style="color:#eee; font-size:0.75rem;">Allez dans l'onglet Config pour choisir un profil.</span>`;
     }
 }
 
 function initNatures() {
     const container = document.getElementById('nature-list');
-    if (!container || typeof DATA_NATURES === 'undefined') return;
-    
+    if (!container) return;
     container.innerHTML = ""; 
-    DATA_NATURES.forEach(n => {
+    // On affiche uniquement les natures uniques pour le filtre (24 types)
+    const uniqueNatures = [...new Set(DATA_NATURES)];
+    uniqueNatures.forEach(n => {
         const row = document.createElement('div');
         row.className = "nature-row";
         row.innerHTML = `<span>${n}</span><input type="checkbox" class="nat-check" value="${n}">`;
@@ -56,7 +44,7 @@ function initNatures() {
 
 function initLocations() {
     const select = document.getElementById('area-select');
-    if (!select || typeof DATA_LOCATIONS === 'undefined') return;
+    if (!select) return;
     select.innerHTML = "";
     for (const key in DATA_LOCATIONS) {
         let opt = document.createElement('option');
@@ -79,7 +67,7 @@ function lcrng(seed) {
 function generateFrames() {
     const active = JSON.parse(localStorage.getItem('rng_active_profile'));
     if (!active) {
-        alert("Veuillez sélectionner un profil actif dans l'onglet Config !");
+        alert("Action impossible : Aucun profil n'est sélectionné dans l'onglet Config.");
         return;
     }
 
