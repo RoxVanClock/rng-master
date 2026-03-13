@@ -13,7 +13,7 @@
         
         .main-config { background: #222; border-radius: 12px; border: 1px solid #333; margin-bottom: 10px; overflow: hidden; }
         .main-config summary { padding: 15px; cursor: pointer; color: var(--game-color); font-weight: bold; list-style: none; display: flex; justify-content: space-between; }
-        .main-config summary::after { content: '▼'; transition: 0.3s; }
+        .main-config summary::after { content: '▼'; }
         .main-config[open] summary::after { content: '▲'; }
         
         .config-body { padding: 0 15px 15px 15px; }
@@ -26,7 +26,6 @@
             display: flex; justify-content: space-between; align-items: center;
             padding: 12px 15px; border-bottom: 1px solid #252525; color: #eee;
         }
-        .nature-row:last-child { border-bottom: none; }
         .nature-row input { width: 20px; height: 20px; accent-color: var(--game-color); }
 
         .method-context { background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; margin: 10px 0; border: 1px dashed #444; }
@@ -40,9 +39,7 @@
     <details class="main-config" open>
         <summary>🔍 CONFIGURATION</summary>
         <div class="config-body">
-            <div id="profile-banner" class="banner">
-                Chargement du profil...
-            </div>
+            <div id="profile-banner" class="banner"></div>
 
             <div style="display: flex; gap: 10px;">
                 <div style="flex:1;"><label>Début</label><input type="number" id="f-start" value="0"></div>
@@ -88,12 +85,7 @@
         <div class="results-scroll">
             <table>
                 <thead>
-                    <tr>
-                        <th>Fr</th>
-                        <th>Nature</th>
-                        <th>IVs</th>
-                        <th>Pokémon</th>
-                    </tr>
+                    <tr><th>Fr</th><th>Nature</th><th>IVs</th><th>Pokémon</th></tr>
                 </thead>
                 <tbody id="results-body"></tbody>
             </table>
