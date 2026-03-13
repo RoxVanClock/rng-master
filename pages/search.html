@@ -5,40 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../style-core.css">
     <style>
-        .results-scroll { max-height: 450px; overflow-y: auto; margin-top: 15px; border-radius: 8px; background: #111; }
+        .results-scroll { max-height: 400px; overflow-y: auto; margin-top: 15px; border-radius: 8px; background: #111; border: 1px solid #333; }
         table { width: 100%; border-collapse: collapse; font-size: 11px; text-align: center; }
         th { position: sticky; top: 0; background: #222; padding: 10px; border-bottom: 2px solid var(--game-color); color: #888; }
-        td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .shiny-row { background: rgba(255, 215, 0, 0.1) !important; color: gold; font-weight: bold; }
         
-        /* Bloc principal repliable avec icône */
-        .main-config { background: #222; border-radius: 12px; border: 1px solid #333; margin-bottom: 10px; }
-        .main-config summary { 
-            padding: 15px; cursor: pointer; color: var(--game-color); 
-            font-weight: bold; list-style: none; display: flex; justify-content: space-between; align-items: center;
-        }
-        .main-config summary::-webkit-details-marker { display: none; }
-        .main-config summary::after { content: '▼'; font-size: 0.8rem; transition: 0.3s; }
+        .main-config { background: #222; border-radius: 12px; border: 1px solid #333; margin-bottom: 10px; overflow: hidden; }
+        .main-config summary { padding: 15px; cursor: pointer; color: var(--game-color); font-weight: bold; list-style: none; display: flex; justify-content: space-between; }
+        .main-config summary::after { content: '▼'; transition: 0.3s; }
         .main-config[open] summary::after { content: '▲'; }
         
         .config-body { padding: 0 15px 15px 15px; }
-        .method-context { background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; margin: 10px 0; border: 1px dashed #444; }
-        
-        /* Sélection des natures en colonne */
-        .nature-container {
-            background: #111; border: 1px solid #444; border-radius: 8px;
-            max-height: 150px; overflow-y: auto; margin-top: 5px;
-        }
-        .nature-item { 
-            display: flex; align-items: center; gap: 10px; padding: 8px 12px;
-            border-bottom: 1px solid #222; font-size: 0.9rem; color: #ccc; 
-        }
-        .nature-item:last-child { border-bottom: none; }
-        .nature-item input { width: 18px; height: 18px; cursor: pointer; }
 
-        .btn-search { width: 100%; padding: 12px; margin-top: 15px; background: var(--game-color); color: #000; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        .options-row { display: grid; grid-template-columns: 100px 1fr; gap: 10px; margin-top: 10px; }
-        .shiny-toggle { display: flex; align-items: center; justify-content: center; gap: 8px; background: #333; border-radius: 8px; font-size: 0.85rem; }
+        /* Style Natures en une seule colonne propre */
+        .nature-list-container {
+            background: #1a1a1a; border-radius: 8px; border: 1px solid #333;
+            max-height: 180px; overflow-y: auto; margin: 10px 0;
+        }
+        .nature-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 15px; border-bottom: 1px solid #252525; color: #eee;
+        }
+        .nature-row:last-child { border-bottom: none; }
+        .nature-row input { width: 20px; height: 20px; accent-color: var(--game-color); }
+
+        .method-context { background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; margin: 10px 0; border: 1px dashed #444; }
+        .options-row { display: grid; grid-template-columns: 80px 1fr; gap: 10px; margin-top: 15px; }
+        .shiny-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; background: #333; border-radius: 8px; font-size: 0.7rem; }
     </style>
 </head>
 <body>
@@ -46,7 +40,8 @@
     <details class="main-config" open>
         <summary>🔍 CONFIGURATION</summary>
         <div class="config-body">
-            <p id="active-info" style="font-size: 0.8rem; color: #aaa; margin-bottom: 15px; background: #111; padding: 8px; border-radius: 5px; border-left: 3px solid var(--game-color);"></p>
+            <div id="profile-banner" style="padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 0.85rem;">
+                </div>
 
             <div style="display: flex; gap: 10px;">
                 <div style="flex:1;"><label>Début</label><input type="number" id="f-start" value="0"></div>
@@ -75,31 +70,33 @@
                 </div>
             </div>
 
-            <label style="margin-top:10px; display:block;">Natures (Multi-sélection)</label>
-            <div id="nature-list" class="nature-container">
-                </div>
+            <label style="margin-top:10px; display:block;">Natures</label>
+            <div id="nature-list" class="nature-list-container"></div>
 
             <div class="options-row">
-                <div class="shiny-toggle">
-                    <input type="checkbox" id="filter-shiny"> <label for="filter-shiny">✨ Shiny</label>
+                <div class="shiny-btn">
+                    <input type="checkbox" id="filter-shiny">
+                    <span>SHINY</span>
                 </div>
-                <button class="btn-search" onclick="generateFrames()">RECHERCHER</button>
+                <button class="btn" onclick="generateFrames()" style="margin:0; height: 50px;">RECHERCHER</button>
             </div>
         </div>
     </details>
 
-    <div id="results-area" class="results-scroll" style="display:none;">
-        <table>
-            <thead>
-                <tr>
-                    <th>Frame</th>
-                    <th>Nature</th>
-                    <th>IVs (PV/A/D/SA/SD/V)</th>
-                    <th>Pokémon</th>
-                </tr>
-            </thead>
-            <tbody id="results-body"></tbody>
-        </table>
+    <div id="results-area" style="display:none;">
+        <div class="results-scroll">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fr</th>
+                        <th>Nature</th>
+                        <th>IVs</th>
+                        <th>Pokémon</th>
+                    </tr>
+                </thead>
+                <tbody id="results-body"></tbody>
+            </table>
+        </div>
     </div>
 
     <script src="data-natures.js"></script>
