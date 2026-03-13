@@ -1,5 +1,5 @@
 /**
- * SEARCH.JS - Moteur de recherche synchronisé
+ * SEARCH.JS - VERSION SYNCHRO FINALE
  */
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -9,52 +9,35 @@ window.addEventListener('DOMContentLoaded', () => {
 
 function refreshProfileStatus() {
     const banner = document.getElementById('profile-banner');
-    if (!banner) return;
+    const raw = localStorage.getItem('rng_active_profile');
     
-    // Récupération de l'objet profil actif
-    const rawData = localStorage.getItem('rng_active_profile');
-    let active = null;
-
-    if (rawData) {
-        try {
-            active = JSON.parse(rawData);
-            // Si ce n'est pas un objet (vieux format), on l'ignore pour forcer l'utilisateur à recliquer
-            if (typeof active !== 'object') active = null;
-        } catch(e) { active = null; }
+    if (!raw) {
+        banner.innerHTML = "⚠️ Aucun profil. Allez dans Config.";
+        banner.style.color = "#e74c3c";
+        return;
     }
 
-    if (active && active.tid !== undefined) {
-        banner.style.backgroundColor = "rgba(46, 204, 113, 0.15)";
-        banner.style.borderColor = "#2ecc71";
-        banner.style.color = "#2ecc71";
-        banner.innerHTML = `
-            <div style="flex-grow:1; text-align:left;">
-                <b>✅ Profil : ${active.name}</b><br>
-                <small style="color:#eee">TID: ${active.tid} | SID: ${active.sid || '0'}</small>
-            </div>
-            <button class="refresh-btn" onclick="refreshProfileStatus()" style="background:none; border:none; color:white; cursor:pointer;">🔄</button>`;
-    } else {
-        banner.style.backgroundColor = "rgba(231, 76, 60, 0.15)";
-        banner.style.borderColor = "#e74c3c";
-        banner.style.color = "#e74c3c";
-        banner.innerHTML = `
-            <div style="flex-grow:1; text-align:left;">
-                <b>⚠️ Aucun profil actif</b><br>
-                <small style="color:#eee">Cliquez sur un profil dans l'onglet Config.</small>
-            </div>
-            <button class="refresh-btn" onclick="refreshProfileStatus()" style="background:none; border:none; color:white; cursor:pointer;">🔄</button>`;
+    try {
+        const active = JSON.parse(raw);
+        if (active && active.name) {
+            banner.style.color = "#2ecc71";
+            banner.innerHTML = `✅ <b>Profil : ${active.name}</b> (TID: ${active.tid})`;
+        } else {
+            banner.innerHTML = "⚠️ Profil mal chargé. Re-cliquez dans Config.";
+        }
+    } catch(e) {
+        banner.innerHTML = "⚠️ Erreur de données. Re-cliquez dans Config.";
     }
 }
 
 function initNatureList() {
     const container = document.getElementById('nature-list');
-    if (!container) return;
-    // On affiche les 24 noms uniques
-    const uniqueNatures = [...new Set(DATA_NATURES)];
-    container.innerHTML = uniqueNatures.map(n => `
-        <div class="nature-row" style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #222;">
+    const natures = ["Hardi", "Solo", "Brave", "Rigide", "Mauvais", "Assuré", "Docile", "Relax", "Malin", "Lâche", "Timide", "Pressé", "Sérieux", "Jovial", "Naïf", "Modeste", "Doux", "Discret", "Prudent", "Foufou", "Calme", "Gentil", "Malpoli", "Bizarre"];
+    
+    container.innerHTML = natures.map(n => `
+        <div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid #222;">
             <span>${n}</span>
-            <input type="checkbox" class="nat-check" value="${n}" style="width:20px; height:20px;">
+            <input type="checkbox" class="nat-check" value="${n}">
         </div>
     `).join('');
 }
@@ -64,20 +47,14 @@ function lcrng(seed) {
 }
 
 function generateFrames() {
-    const rawData = localStorage.getItem('rng_active_profile');
-    let active = null;
-    try { active = JSON.parse(rawData); } catch(e) {}
-
-    if (!active || typeof active !== 'object') {
-        return alert("Veuillez d'abord sélectionner un profil dans l'onglet Configuration.");
-    }
+    const active = JSON.parse(localStorage.getItem('rng_active_profile'));
+    if (!active) return alert("Sélectionnez un profil dans Config !");
 
     const start = parseInt(document.getElementById('f-start').value) || 0;
     const end = parseInt(document.getElementById('f-end').value) || 5000;
-    const selectedNatures = Array.from(document.querySelectorAll('.nat-check:checked')).map(c => c.value);
-
     const tid = parseInt(active.tid);
     const sid = parseInt(active.sid || 0);
+
     const tbody = document.getElementById('results-body');
     tbody.innerHTML = "";
     document.getElementById('results-container').style.display = "block";
@@ -89,25 +66,15 @@ function generateFrames() {
         let p1 = Number(lcrng(seed) >> 16n);
         let p2 = Number(lcrng(lcrng(seed)) >> 16n);
         let pid = ((p2 << 16) | p1) >>> 0;
-        
-        let nature = DATA_NATURES[pid % 25];
-        
-        if (selectedNatures.length > 0 && !selectedNatures.includes(nature)) {
-            seed = lcrng(seed);
-            continue;
-        }
-
         let isShiny = ((tid ^ sid) ^ (p1 ^ p2)) < 8;
-        
-        const row = document.createElement('tr');
-        if (isShiny) row.style.backgroundColor = "rgba(255, 215, 0, 0.1)";
-        row.innerHTML = `
-            <td style="${isShiny ? 'color:gold;font-weight:bold;' : ''}">${f}</td>
-            <td>${nature}</td>
-            <td style="color:#666;">-</td>
-            <td>${isShiny ? '✨ SHINY' : 'Normal'}</td>
-        `;
-        tbody.appendChild(row);
+
+        if (isShiny) {
+            const row = document.createElement('tr');
+            row.innerHTML = `<td>${f}</td><td>Shiny</td><td>✨ SHINY ✨</td>`;
+            row.style.color = "gold";
+            tbody.appendChild(row);
+        }
         seed = lcrng(seed);
     }
+    if(tbody.innerHTML === "") tbody.innerHTML = "<tr><td colspan='3'>Aucun Shiny trouvé dans cette zone.</td></tr>";
 }
