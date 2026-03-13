@@ -61,9 +61,22 @@ function displayProfiles() {
     const activeInfo = document.getElementById('active-info');
     
     const profiles = JSON.parse(localStorage.getItem('rng_profiles') || "[]");
-    const activeId = localStorage.getItem('rng_active_profile');
+    
+    // On essaie de lire l'objet actif
+    let activeData = localStorage.getItem('rng_active_profile');
+    let activeProfile = null;
 
-    const activeProfile = profiles.find(p => p.id == activeId);
+    if (activeData) {
+        try {
+            const parsed = JSON.parse(activeData);
+            // Si c'est un objet (nouveau format), on prend son ID, sinon c'était l'ancien format (ID seul)
+            const activeId = (typeof parsed === 'object') ? parsed.id : parsed;
+            activeProfile = profiles.find(p => p.id == activeId);
+        } catch(e) {
+            activeProfile = profiles.find(p => p.id == activeData);
+        }
+    }
+
     if (activeProfile) {
         activeBox.style.display = "block";
         updateThemeColor(activeProfile.game);
@@ -79,7 +92,7 @@ function displayProfiles() {
     }
 
     list.innerHTML = profiles.map((p, i) => {
-        const isActive = (p.id == activeId);
+        const isActive = activeProfile && (p.id == activeProfile.id);
         const sidDisplay = (p.sid !== undefined) ? p.sid.toString().padStart(5, '0') : "00000";
         return `
             <div onclick="selectProfile('${p.id}')" class="profile-item ${isActive ? 'active' : ''}">
@@ -100,8 +113,14 @@ function displayProfiles() {
 }
 
 function selectProfile(id) {
-    localStorage.setItem('rng_active_profile', id);
-    displayProfiles();
+    const profiles = JSON.parse(localStorage.getItem('rng_profiles') || "[]");
+    const activeProfile = profiles.find(p => p.id == id);
+    
+    if (activeProfile) {
+        // CORRECTION : On stocke l'objet ENTIER pour search.js
+        localStorage.setItem('rng_active_profile', JSON.stringify(activeProfile));
+        displayProfiles();
+    }
 }
 
 function handleEdit(event, index) {
@@ -152,7 +171,7 @@ function handleFileSelect(event) {
             const data = JSON.parse(e.target.result);
             localStorage.setItem('rng_profiles', JSON.stringify(data));
             location.reload(); 
-        } catch(err) { alert("Erreur"); }
+        } catch(err) { alert("Erreur lors de l'import"); }
     };
     reader.readAsText(event.target.files[0]);
 }
