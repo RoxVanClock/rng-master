@@ -1,21 +1,24 @@
 /**
- * MASTER SEARCH ENGINE - POKEFINDER ACCURACY
+ * MASTER SEARCH ENGINE - REVISED
  */
 
 window.addEventListener('DOMContentLoaded', () => {
+    // On s'assure que le profil est chargé AVANT d'initialiser le reste
+    refreshProfile();
     initNatures();
     initLocations();
     updateMethodContext();
-    refreshProfile();
 });
 
 function initNatures() {
     const list = document.getElementById('nature-list');
     if (!list || typeof DATA_NATURES === 'undefined') return;
+    
+    list.innerHTML = ""; // Nettoyage
     DATA_NATURES.forEach(n => {
         const item = document.createElement('label');
         item.className = "nature-item";
-        item.innerHTML = `<input type="checkbox" class="nat-check" value="${n}"> ${n}`;
+        item.innerHTML = `<input type="checkbox" class="nat-check" value="${n}"> <span>${n}</span>`;
         list.appendChild(item);
     });
 }
@@ -23,6 +26,8 @@ function initNatures() {
 function initLocations() {
     const select = document.getElementById('area-select');
     if (!select || typeof DATA_LOCATIONS === 'undefined') return;
+    
+    select.innerHTML = "";
     for (const key in DATA_LOCATIONS) {
         let opt = document.createElement('option');
         opt.value = key;
@@ -40,10 +45,14 @@ function updateMethodContext() {
 function refreshProfile() {
     const active = JSON.parse(localStorage.getItem('rng_active_profile'));
     const info = document.getElementById('active-info');
-    if (active) {
-        info.innerText = `Profil actif : ${active.name} (TID:${active.tid} | SID:${active.sid})`;
+    
+    if (active && active.name) {
+        // Sécurité pour éviter undefined si les champs sont vides
+        const tid = active.tid || "00000";
+        const sid = active.sid || "00000";
+        info.innerText = `Profil : ${active.name} (TID : ${tid} | SID : ${sid})`;
     } else {
-        info.innerHTML = "<span style='color:red;'>⚠️ Aucun profil configuré !</span>";
+        info.innerHTML = "<span style='color:#e74c3c;'>⚠️ Aucun profil actif. Allez dans Config.</span>";
     }
 }
 
@@ -55,19 +64,21 @@ function generateFrames() {
     const active = JSON.parse(localStorage.getItem('rng_active_profile'));
     if (!active) return alert("Veuillez d'abord créer un profil dans l'onglet Config.");
 
-    const start = parseInt(document.getElementById('f-start').value);
-    const end = parseInt(document.getElementById('f-end').value);
+    const start = parseInt(document.getElementById('f-start').value) || 0;
+    const end = parseInt(document.getElementById('f-end').value) || 5000;
     const method = document.getElementById('method').value;
     const onlyShiny = document.getElementById('filter-shiny').checked;
+    
+    // Récupération des natures sélectionnées
     const selectedNatures = Array.from(document.querySelectorAll('.nat-check:checked')).map(c => c.value);
 
-    const tid = parseInt(active.tid);
-    const sid = parseInt(active.sid);
+    const tid = parseInt(active.tid) || 0;
+    const sid = parseInt(active.sid) || 0;
     const tbody = document.getElementById('results-body');
     tbody.innerHTML = "";
     document.getElementById('results-area').style.display = "block";
 
-    let seed = 0n; // Base Émeraude
+    let seed = 0n; 
     for (let i = 0; i < start; i++) seed = lcrng(seed);
 
     for (let f = start; f <= end; f++) {
