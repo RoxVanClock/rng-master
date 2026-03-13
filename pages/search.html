@@ -5,33 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../style-core.css">
     <style>
-        .results-scroll { max-height: 400px; overflow-y: auto; margin-top: 15px; border-radius: 8px; background: #111; border: 1px solid #333; }
-        table { width: 100%; border-collapse: collapse; font-size: 11px; text-align: center; }
-        th { position: sticky; top: 0; background: #222; padding: 10px; border-bottom: 2px solid var(--game-color); color: #888; }
-        td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .shiny-row { background: rgba(255, 215, 0, 0.1) !important; color: gold; font-weight: bold; }
-        
         .main-config { background: #222; border-radius: 12px; border: 1px solid #333; margin-bottom: 10px; overflow: hidden; }
-        .main-config summary { padding: 15px; cursor: pointer; color: var(--game-color); font-weight: bold; list-style: none; display: flex; justify-content: space-between; }
-        .main-config summary::after { content: '▼'; }
+        .main-config summary { 
+            padding: 15px; cursor: pointer; color: var(--game-color); 
+            font-weight: bold; list-style: none; display: flex; justify-content: space-between; 
+        }
+        .main-config summary::-webkit-details-marker { display: none; }
+        .main-config summary::after { content: '▼'; font-size: 0.8rem; }
         .main-config[open] summary::after { content: '▲'; }
         
         .config-body { padding: 0 15px 15px 15px; }
 
+        /* Natures en une seule colonne comme demandé */
         .nature-list-container {
-            background: #1a1a1a; border-radius: 8px; border: 1px solid #333;
-            max-height: 180px; overflow-y: auto; margin: 10px 0;
+            background: #111; border-radius: 8px; border: 1px solid #444;
+            max-height: 200px; overflow-y: auto; margin: 10px 0;
         }
         .nature-row {
             display: flex; justify-content: space-between; align-items: center;
-            padding: 12px 15px; border-bottom: 1px solid #252525; color: #eee;
+            padding: 12px 15px; border-bottom: 1px solid #222; color: #ccc;
         }
         .nature-row input { width: 20px; height: 20px; accent-color: var(--game-color); }
 
-        .method-context { background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; margin: 10px 0; border: 1px dashed #444; }
-        .options-row { display: grid; grid-template-columns: 80px 1fr; gap: 10px; margin-top: 15px; }
-        .shiny-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; background: #333; border-radius: 8px; font-size: 0.7rem; }
         .banner { padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 0.85rem; border: 1px solid transparent; }
+        .results-scroll { max-height: 400px; overflow-y: auto; margin-top: 15px; background: #111; border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; font-size: 11px; text-align: center; }
+        th { position: sticky; top: 0; background: #222; padding: 10px; border-bottom: 2px solid var(--game-color); }
+        td { padding: 10px; border-bottom: 1px solid #222; }
     </style>
 </head>
 <body>
@@ -39,7 +39,7 @@
     <details class="main-config" open>
         <summary>🔍 CONFIGURATION</summary>
         <div class="config-body">
-            <div id="profile-banner" class="banner"></div>
+            <div id="profile-banner" class="banner">Vérification du profil...</div>
 
             <div style="display: flex; gap: 10px;">
                 <div style="flex:1;"><label>Début</label><input type="number" id="f-start" value="0"></div>
@@ -50,50 +50,23 @@
             <select id="method" onchange="updateMethodContext()">
                 <option value="h1">Méthode H1 (Fixe / Légendaire)</option>
                 <option value="h2">Méthode H2 (Sauvage - Émeraude)</option>
-                <option value="h4">Méthode H4 (Sauvage - RS/FRLG)</option>
             </select>
-
-            <div id="method-options" class="method-context">
-                <div id="h1-options">
-                    <label>Cible Statique</label>
-                    <select id="h1-target">
-                        <option value="Rayquaza">Rayquaza</option>
-                        <option value="Kyogre/Groudon">Kyogre / Groudon</option>
-                        <option value="Starter">Starter</option>
-                    </select>
-                </div>
-                <div id="h2-h4-options" style="display:none;">
-                    <label>Lieu / Route</label>
-                    <select id="area-select"></select>
-                </div>
-            </div>
 
             <label style="margin-top:10px; display:block;">Natures</label>
             <div id="nature-list" class="nature-list-container"></div>
 
-            <div class="options-row">
-                <div class="shiny-btn">
-                    <input type="checkbox" id="filter-shiny">
-                    <span>SHINY</span>
-                </div>
-                <button class="btn" onclick="generateFrames()" style="margin:0; height: 50px;">RECHERCHER</button>
-            </div>
+            <button class="btn" onclick="generateFrames()" style="width:100%; margin-top:15px;">RECHERCHER</button>
         </div>
     </details>
 
-    <div id="results-area" style="display:none;">
-        <div class="results-scroll">
-            <table>
-                <thead>
-                    <tr><th>Fr</th><th>Nature</th><th>IVs</th><th>Pokémon</th></tr>
-                </thead>
-                <tbody id="results-body"></tbody>
-            </table>
-        </div>
+    <div id="results-area" style="display:none;" class="results-scroll">
+        <table>
+            <thead><tr><th>Fr</th><th>Nature</th><th>IVs</th><th>Pokémon</th></tr></thead>
+            <tbody id="results-body"></tbody>
+        </table>
     </div>
 
     <script src="data-natures.js"></script>
-    <script src="data-locations.js"></script>
     <script src="search.js"></script>
 </body>
 </html>
