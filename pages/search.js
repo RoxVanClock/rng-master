@@ -1,32 +1,48 @@
 /**
- * MASTER SEARCH ENGINE - REVISED
+ * MASTER SEARCH ENGINE - FINAL SYNC
  */
 
 window.addEventListener('DOMContentLoaded', () => {
-    // On s'assure que le profil est chargé AVANT d'initialiser le reste
-    refreshProfile();
+    syncActiveProfile();
     initNatures();
     initLocations();
     updateMethodContext();
 });
 
+// Cette fonction force la synchronisation avec l'onglet Config
+function syncActiveProfile() {
+    const banner = document.getElementById('profile-banner');
+    const activeProfile = JSON.parse(localStorage.getItem('rng_active_profile'));
+
+    if (activeProfile && activeProfile.name) {
+        banner.style.background = "rgba(46, 204, 113, 0.1)";
+        banner.style.border = "1px solid #2ecc71";
+        banner.innerHTML = `<b style="color:#2ecc71;">✅ Profil : ${activeProfile.name}</b><br>
+                            <span style="opacity:0.8; font-size:0.75rem;">TID: ${activeProfile.tid} | SID: ${activeProfile.sid}</span>`;
+    } else {
+        banner.style.background = "rgba(231, 76, 60, 0.1)";
+        banner.style.border = "1px solid #e74c3c";
+        banner.innerHTML = `<b style="color:#e74c3c;">⚠️ Aucun profil actif !</b><br>
+                            <span style="opacity:0.8; font-size:0.75rem;">Configurez un profil dans l'onglet Config.</span>`;
+    }
+}
+
 function initNatures() {
-    const list = document.getElementById('nature-list');
-    if (!list || typeof DATA_NATURES === 'undefined') return;
+    const container = document.getElementById('nature-list');
+    if (!container || typeof DATA_NATURES === 'undefined') return;
     
-    list.innerHTML = ""; // Nettoyage
+    container.innerHTML = ""; 
     DATA_NATURES.forEach(n => {
-        const item = document.createElement('label');
-        item.className = "nature-item";
-        item.innerHTML = `<input type="checkbox" class="nat-check" value="${n}"> <span>${n}</span>`;
-        list.appendChild(item);
+        const row = document.createElement('div');
+        row.className = "nature-row";
+        row.innerHTML = `<span>${n}</span><input type="checkbox" class="nat-check" value="${n}">`;
+        container.appendChild(row);
     });
 }
 
 function initLocations() {
     const select = document.getElementById('area-select');
     if (!select || typeof DATA_LOCATIONS === 'undefined') return;
-    
     select.innerHTML = "";
     for (const key in DATA_LOCATIONS) {
         let opt = document.createElement('option');
@@ -42,38 +58,25 @@ function updateMethodContext() {
     document.getElementById('h2-h4-options').style.display = (method !== "h1") ? "block" : "none";
 }
 
-function refreshProfile() {
-    const active = JSON.parse(localStorage.getItem('rng_active_profile'));
-    const info = document.getElementById('active-info');
-    
-    if (active && active.name) {
-        // Sécurité pour éviter undefined si les champs sont vides
-        const tid = active.tid || "00000";
-        const sid = active.sid || "00000";
-        info.innerText = `Profil : ${active.name} (TID : ${tid} | SID : ${sid})`;
-    } else {
-        info.innerHTML = "<span style='color:#e74c3c;'>⚠️ Aucun profil actif. Allez dans Config.</span>";
-    }
-}
-
 function lcrng(seed) {
     return (BigInt(seed) * 1103515245n + 24691n) & 0xFFFFFFFFn;
 }
 
 function generateFrames() {
     const active = JSON.parse(localStorage.getItem('rng_active_profile'));
-    if (!active) return alert("Veuillez d'abord créer un profil dans l'onglet Config.");
+    if (!active) {
+        alert("Erreur : Aucun profil sélectionné dans l'onglet Config !");
+        return;
+    }
 
     const start = parseInt(document.getElementById('f-start').value) || 0;
     const end = parseInt(document.getElementById('f-end').value) || 5000;
     const method = document.getElementById('method').value;
     const onlyShiny = document.getElementById('filter-shiny').checked;
-    
-    // Récupération des natures sélectionnées
     const selectedNatures = Array.from(document.querySelectorAll('.nat-check:checked')).map(c => c.value);
 
-    const tid = parseInt(active.tid) || 0;
-    const sid = parseInt(active.sid) || 0;
+    const tid = parseInt(active.tid);
+    const sid = parseInt(active.sid);
     const tbody = document.getElementById('results-body');
     tbody.innerHTML = "";
     document.getElementById('results-area').style.display = "block";
@@ -110,7 +113,6 @@ function generateFrames() {
         if (selectedNatures.length > 0 && !selectedNatures.includes(nature)) { seed = lcrng(seed); continue; }
 
         let stats = `${iv1&31}/${(iv1>>5)&31}/${(iv1>>10)&31}/${(iv2>>5)&31}/${(iv2>>10)&31}/${iv2&31}`;
-        
         let slotRoll = Number(lcrng(lcrng(lcrng(lcrng(tempSeed)))) >> 16n) % 100;
         let slotIdx = [20,40,50,60,70,80,85,90,94,98,99,100].findIndex(t => slotRoll < t);
         let pokemon = (method === "h1") ? document.getElementById('h1-target').value : DATA_LOCATIONS[document.getElementById('area-select').value].slots[slotIdx];
@@ -123,7 +125,6 @@ function generateFrames() {
             alert(`Frame ${f} envoyée au Chrono !`);
         };
         tbody.appendChild(row);
-
         seed = lcrng(seed);
     }
 }
