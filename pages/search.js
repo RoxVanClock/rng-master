@@ -1,35 +1,41 @@
-const NATURES = ["Hardi", "Solo", "Brave", "Rigide", "Mauvais", "Assuré", "Docile", "Relax", "Malin", "Lâche", "Timide", "Pressé", "Sérieux", "Jovial", "Naïf", "Modeste", "Doux", "Discret", "Prudent", "Foufou", "Calme", "Gentil", "Malpoli", "Bizarre", "Prudent"];
+/**
+ * Moteur de recherche RNG - Précision PokéFinder
+ */
 
-const LOCATIONS = {
-    route101: { name: "Route 101", slots: ["Chenipotte", "Zigzaton", "Chenipotte", "Zigzaton", "Chenipotte", "Chenipotte", "Zigzaton", "Zigzaton", "Zigzaton", "Zigzaton", "Zigzaton", "Zigzaton"] },
-    sky_pillar: { name: "Pilier Céleste", slots: ["Nosferalto", "Ténéfix", "Altaria", "Branette", "Terhal", "Claydol", "Ténéfix", "Nosferalto", "Altaria", "Altaria", "Altaria", "Altaria"] },
-    safari: { name: "Parc Safari", slots: ["Pikachu", "Doduo", "Psykokwak", "Girafarig", "Doduo", "Natu", "Pikachu", "Doduo", "Natu", "Natu", "Heracross", "Pinsir"] }
-};
-
+// Initialisation au chargement
 window.addEventListener('DOMContentLoaded', () => {
+    setupNatures();
+    setupLocations();
+    refreshProfileInfo();
+});
+
+function setupNatures() {
     const container = document.getElementById('nature-list');
-    NATURES.forEach(n => {
+    DATA_NATURES.forEach(n => {
         const label = document.createElement('label');
         label.className = "nature-item";
         label.innerHTML = `<input type="checkbox" class="nat-check" value="${n}"> ${n}`;
         container.appendChild(label);
     });
-    updateMethodContext();
-    refreshProfileInfo();
-});
+}
+
+function setupLocations() {
+    const select = document.getElementById('area-select');
+    for (const key in DATA_LOCATIONS) {
+        let opt = document.createElement('option');
+        opt.value = key;
+        opt.innerText = DATA_LOCATIONS[key].name;
+        select.appendChild(opt);
+    }
+}
 
 function refreshProfileInfo() {
     const active = JSON.parse(localStorage.getItem('rng_active_profile'));
     document.getElementById('active-info').innerText = active ? 
-        `Profil : ${active.name} (TID:${active.tid})` : "⚠️ Aucun profil !";
+        `Profil : ${active.name} (TID:${active.tid} | SID:${active.sid})` : "⚠️ Aucun profil !";
 }
 
-function updateMethodContext() {
-    const method = document.getElementById('method').value;
-    document.getElementById('h1-options').style.display = method === "h1" ? "block" : "none";
-    document.getElementById('h2-h4-options').style.display = method !== "h1" ? "block" : "none";
-}
-
+// Algorithme LCRNG Standard (PokéFinder)
 function lcrng(seed) {
     return (BigInt(seed) * 1103515245n + 24691n) & 0xFFFFFFFFn;
 }
@@ -43,45 +49,83 @@ function generateFrames() {
     const method = document.getElementById('method').value;
     const onlyShiny = document.getElementById('filter-shiny').checked;
     const selectedNatures = Array.from(document.querySelectorAll('.nat-check:checked')).map(c => c.value);
-
+    
     const tid = parseInt(active.tid);
     const sid = parseInt(active.sid);
     const tbody = document.getElementById('results-body');
     tbody.innerHTML = "";
     document.getElementById('results-area').style.display = "block";
 
-    let currentSeed = 0n; 
-    for (let i = 0; i < start; i++) { currentSeed = lcrng(currentSeed); }
+    // Seed initiale (0 pour Emeraude / Pile morte)
+    let seed = 0n;
+    for (let i = 0; i < start; i++) seed = lcrng(seed);
 
     for (let f = start; f <= end; f++) {
-        let s1 = lcrng(currentSeed);
-        let s2 = lcrng(s1);
-        let p1 = Number(s1 >> 16n);
-        let p2 = Number(s2 >> 16n);
-        let pid = ((p2 << 16) | p1) >>> 0;
-        
-        let s3 = lcrng(s2); let s4 = lcrng(s3);
-        let iv1 = Number(s3 >> 16n); let iv2 = Number(s4 >> 16n);
-        let stats = `${iv1&31}/${(iv1>>5)&31}/${(iv1>>10)&31}/${(iv2>>5)&31}/${(iv2>>10)&31}/${iv2&31}`;
+        let tempSeed = seed;
+        let p1, p2, pid, iv1, iv2;
 
+        // --- LOGIQUE POKÉFINDER PAR MÉTHODE ---
+        if (method === "h1") {
+            // H1 : PID puis IVs
+            p1 = Number(lcrng(tempSeed) >> 16n);
+            p2 = Number(lcrng(lcrng(tempSeed)) >> 16n);
+            pid = ((p2 << 16) | p1) >>> 0;
+            
+            let s_iv1 = lcrng(lcrng(lcrng(tempSeed)));
+            let s_iv2 = lcrng(s_iv1);
+            iv1 = Number(s_iv1 >> 16n);
+            iv2 = Number(s_iv2 >> 16n);
+        } else {
+            // H2 / H4 : IVs puis PID (Ordre inverse pour le sauvage)
+            let s_iv1 = lcrng(tempSeed);
+            let s_iv2 = lcrng(s_iv1);
+            iv1 = Number(s_iv1 >> 16n);
+            iv2 = Number(s_iv2 >> 16n);
+            
+            p1 = Number(lcrng(s_iv2) >> 16n);
+            p2 = Number(lcrng(lcrng(s_iv2)) >> 16n);
+            pid = ((p2 << 16) | p1) >>> 0;
+        }
+
+        // --- CALCULS FINAUX ---
         let isShiny = ((tid ^ sid) ^ (p1 ^ p2)) < 8;
-        let nature = NATURES[pid % 25];
+        let nature = DATA_NATURES[pid % 25];
 
-        if (onlyShiny && !isShiny) { currentSeed = s1; continue; }
-        if (selectedNatures.length > 0 && !selectedNatures.includes(nature)) { currentSeed = s1; continue; }
+        // Filtres
+        if (onlyShiny && !isShiny) { seed = lcrng(seed); continue; }
+        if (selectedNatures.length > 0 && !selectedNatures.includes(nature)) { seed = lcrng(seed); continue; }
 
-        let slotRoll = Number(lcrng(s4) >> 16n) % 100;
+        // Calcul des IVs individuels
+        let hp = iv1 & 31;
+        let atk = (iv1 >> 5) & 31;
+        let def = (iv1 >> 10) & 31;
+        let spe = iv2 & 31;
+        let spa = (iv2 >> 5) & 31;
+        let spd = (iv2 >> 10) & 31;
+
+        // Slot de rencontre (PokéFinder utilise un roll spécifique après les IVs)
+        let slotRoll = Number(lcrng(lcrng(lcrng(lcrng(tempSeed)))) >> 16n) % 100;
         let slotIdx = [20,40,50,60,70,80,85,90,94,98,99,100].findIndex(t => slotRoll < t);
-        let pokemon = method === "h1" ? document.getElementById('h1-target').value : LOCATIONS[document.getElementById('area-select').value].slots[slotIdx];
+        
+        let pokeName = (method === "h1") ? 
+            document.getElementById('h1-target').value : 
+            DATA_LOCATIONS[document.getElementById('area-select').value].slots[slotIdx];
 
+        // Rendu
         const row = document.createElement('tr');
         if (isShiny) row.className = "shiny-row";
-        row.innerHTML = `<td>${f}</td><td>${nature}</td><td>${stats}</td><td>${pokemon}</td>`;
+        row.innerHTML = `
+            <td>${f}</td>
+            <td>${nature}</td>
+            <td>${hp}/${atk}/${def}/${spa}/${spd}/${spe}</td>
+            <td>${pokeName}</td>
+        `;
         row.onclick = () => {
             localStorage.setItem('temp_target_frame', f);
-            alert(`Cible envoyée : Frame ${f}`);
+            alert(`Frame ${f} envoyée au Chrono !`);
         };
         tbody.appendChild(row);
-        currentSeed = s1;
+
+        seed = lcrng(seed); // Avance d'une frame
     }
 }
