@@ -3,11 +3,21 @@ const DATA_LOCATIONS = {
         name: "Route 101 (Emeraude)",
         game: "emerald",
         type: "wild",
-        // Les 12 slots officiels de PokéFinder pour cette route
         slots: [
             "Chenipotte", "Zigzaton", "Chenipotte", "Zigzaton", "Chenipotte", 
             "Chenipotte", "Zigzaton", "Zigzaton", "Zigzaton", "Zigzaton", 
             "Zigzaton", "Zigzaton"
+        ]
+    },
+    "em_route102": {
+        name: "Route 102 (Emeraude)",
+        game: "emerald",
+        type: "wild",
+        // Slots officiels : 0-11
+        slots: [
+            "Zigzaton", "Chenipotte", "Zigzaton", "Chenipotte", "Nénupiot", 
+            "Nénupiot", "Tarsal", "Tarsal", "Grainipiot", "Grainipiot", 
+            "Arakdo", "Arakdo"
         ]
     }
 };
