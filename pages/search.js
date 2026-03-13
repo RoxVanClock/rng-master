@@ -1,16 +1,21 @@
 /**
- * MASTER SEARCH ENGINE - STRICT MODE
+ * MASTER SEARCH ENGINE - FIXED PROFILE SYNC
  */
 
 window.addEventListener('DOMContentLoaded', () => {
+    // Force la vérification du profil au chargement de la page
     checkProfileStatus();
     initNatures();
     initLocations();
     updateMethodContext();
 });
 
+// Cette fonction doit lire EXACTEMENT la même clé que l'onglet Config
 function checkProfileStatus() {
     const banner = document.getElementById('profile-banner');
+    
+    // On récupère le profil actif. 
+    // Note : Vérifie que ton onglet Config utilise bien 'rng_active_profile'
     const active = JSON.parse(localStorage.getItem('rng_active_profile'));
 
     if (active && active.name) {
@@ -24,7 +29,7 @@ function checkProfileStatus() {
         banner.style.borderColor = "#e74c3c";
         banner.style.color = "#e74c3c";
         banner.innerHTML = `<b>⚠️ Aucun profil sélectionné</b><br>
-                            <span style="color:#eee; font-size:0.75rem;">Allez dans l'onglet Config pour choisir un profil.</span>`;
+                            <span style="color:#eee; font-size:0.75rem;">Allez dans l'onglet Config et cliquez sur un profil pour l'activer.</span>`;
     }
 }
 
@@ -32,7 +37,8 @@ function initNatures() {
     const container = document.getElementById('nature-list');
     if (!container) return;
     container.innerHTML = ""; 
-    // On affiche uniquement les natures uniques pour le filtre (24 types)
+    
+    // On affiche les 24 noms uniques pour le filtrage
     const uniqueNatures = [...new Set(DATA_NATURES)];
     uniqueNatures.forEach(n => {
         const row = document.createElement('div');
@@ -45,19 +51,21 @@ function initNatures() {
 function initLocations() {
     const select = document.getElementById('area-select');
     if (!select) return;
-    select.innerHTML = "";
-    for (const key in DATA_LOCATIONS) {
-        let opt = document.createElement('option');
-        opt.value = key;
-        opt.innerText = DATA_LOCATIONS[key].name;
-        select.appendChild(opt);
+    if (typeof DATA_LOCATIONS !== 'undefined') {
+        for (const key in DATA_LOCATIONS) {
+            let opt = document.createElement('option');
+            opt.value = key;
+            opt.innerText = DATA_LOCATIONS[key].name;
+            select.appendChild(opt);
+        }
     }
 }
 
 function updateMethodContext() {
     const method = document.getElementById('method').value;
     document.getElementById('h1-options').style.display = (method === "h1") ? "block" : "none";
-    document.getElementById('h2-h4-options').style.display = (method !== "h1") ? "block" : "none";
+    const h24 = document.getElementById('h2-h4-options');
+    if (h24) h24.style.display = (method !== "h1") ? "block" : "none";
 }
 
 function lcrng(seed) {
@@ -67,7 +75,7 @@ function lcrng(seed) {
 function generateFrames() {
     const active = JSON.parse(localStorage.getItem('rng_active_profile'));
     if (!active) {
-        alert("Action impossible : Aucun profil n'est sélectionné dans l'onglet Config.");
+        alert("Erreur : Aucun profil n'est sélectionné.");
         return;
     }
 
@@ -115,18 +123,12 @@ function generateFrames() {
         if (selectedNatures.length > 0 && !selectedNatures.includes(nature)) { seed = lcrng(seed); continue; }
 
         let stats = `${iv1&31}/${(iv1>>5)&31}/${(iv1>>10)&31}/${(iv2>>5)&31}/${(iv2>>10)&31}/${iv2&31}`;
-        let slotRoll = Number(lcrng(lcrng(lcrng(lcrng(tempSeed)))) >> 16n) % 100;
-        let slotIdx = [20,40,50,60,70,80,85,90,94,98,99,100].findIndex(t => slotRoll < t);
-        let pokemon = (method === "h1") ? document.getElementById('h1-target').value : DATA_LOCATIONS[document.getElementById('area-select').value].slots[slotIdx];
-
+        
         const row = document.createElement('tr');
         if (isShiny) row.className = "shiny-row";
-        row.innerHTML = `<td>${f}</td><td>${nature}</td><td>${stats}</td><td>${pokemon}</td>`;
-        row.onclick = () => {
-            localStorage.setItem('temp_target_frame', f);
-            alert(`Frame ${f} envoyée au Chrono !`);
-        };
+        row.innerHTML = `<td>${f}</td><td>${nature}</td><td>${stats}</td><td>${method === 'h1' ? 'Fixe' : 'Sauvage'}</td>`;
         tbody.appendChild(row);
+        
         seed = lcrng(seed);
     }
 }
