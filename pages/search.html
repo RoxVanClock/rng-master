@@ -5,94 +5,96 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../style-core.css">
     <style>
-        .results-scroll { max-height: 300px; overflow-y: auto; margin-top: 15px; border-radius: 8px; background: #111; }
+        .results-scroll { max-height: 400px; overflow-y: auto; margin-top: 15px; border-radius: 8px; background: #111; }
         table { width: 100%; border-collapse: collapse; font-size: 11px; text-align: center; }
         th { position: sticky; top: 0; background: #222; padding: 10px; border-bottom: 2px solid var(--game-color); color: #888; }
-        td { padding: 6px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .shiny-row { background: rgba(255, 215, 0, 0.1) !important; color: gold; font-weight: bold; }
         
-        /* Menu Accordéon pour les Natures */
-        details { background: #333; border-radius: 8px; margin-top: 10px; border: 1px solid #444; }
-        summary { padding: 10px; cursor: pointer; font-weight: bold; font-size: 0.9rem; outline: none; }
+        /* Menu principal repliable */
+        .main-search-details { background: var(--card-bg); border-radius: 12px; border: 1px solid #333; overflow: hidden; }
+        .main-search-details > summary { padding: 15px; cursor: pointer; background: #222; font-weight: bold; color: var(--game-color); list-style: none; }
+        .search-content { padding: 15px; }
+
+        /* Natures */
         .nature-selector { 
             display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; 
-            padding: 10px; border-top: 1px solid #444; max-height: 150px; overflow-y: auto;
+            padding: 10px; background: #1a1a1a; border-radius: 8px; max-height: 150px; overflow-y: auto;
         }
-        .nature-item { font-size: 0.8rem; display: flex; align-items: center; gap: 8px; color: #ccc; }
+        .nature-item { font-size: 0.8rem; display: flex; align-items: center; gap: 8px; color: #ccc; cursor: pointer; }
         
-        /* Alignement des options */
-        .options-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; align-items: center; }
-        .method-context { background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; margin-top: 10px; border: 1px dashed #444; }
-        .shiny-box { display: flex; align-items: center; gap: 10px; background: #333; padding: 8px; border-radius: 8px; height: 40px; }
+        .method-context { background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; margin: 10px 0; border: 1px dashed #444; }
+        .options-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .shiny-box { display: flex; align-items: center; justify-content: center; gap: 8px; background: #333; border-radius: 8px; height: 45px; }
     </style>
 </head>
 <body>
 
-    <div class="card">
-        <h3 style="margin-top:0;">🔍 Recherche de Frames</h3>
-        <p id="active-info" style="font-size: 0.8em; opacity: 0.7; margin-bottom: 15px;"></p>
+    <details class="main-search-details" open>
+        <summary>🔍 CONFIGURATION DE RECHERCHE</summary>
+        <div class="search-content">
+            <p id="active-info" style="font-size: 0.8em; opacity: 0.7; margin-bottom: 15px;"></p>
 
-        <div style="display: flex; gap: 10px;">
-            <div style="flex:1;"><label>Frame Début</label><input type="number" id="f-start" value="0"></div>
-            <div style="flex:1;"><label>Frame Fin</label><input type="number" id="f-end" value="5000"></div>
-        </div>
-
-        <label>Méthode</label>
-        <select id="method" onchange="updateMethodContext()">
-            <option value="h1">Méthode H1 (Fixe / Légendaire)</option>
-            <option value="h2">Méthode H2 (Sauvage - Emeraude)</option>
-            <option value="h4">Méthode H4 (Sauvage - RS/FRLG)</option>
-        </select>
-
-        <div id="method-options" class="method-context">
-            <div id="h1-options">
-                <label>Cible</label>
-                <select id="h1-target">
-                    <option value="Rayquaza">Rayquaza</option>
-                    <option value="Kyogre/Groudon">Kyogre / Groudon</option>
-                    <option value="Starter">Starter</option>
-                    <option value="Regis">Regis</option>
-                </select>
+            <div style="display: flex; gap: 10px;">
+                <div style="flex:1;"><label>Frame Début</label><input type="number" id="f-start" value="0"></div>
+                <div style="flex:1;"><label>Frame Fin</label><input type="number" id="f-end" value="5000"></div>
             </div>
-            <div id="h2-h4-options" style="display:none;">
-                <label>Lieu / Route</label>
-                <select id="area-select" onchange="updatePokemonList()">
-                    <option value="route101">Route 101</option>
-                    <option value="sky_pillar">Pilier Céleste</option>
-                    <option value="safari">Parc Safari</option>
-                </select>
+
+            <label style="margin-top:10px; display:block;">Méthode de Génération</label>
+            <select id="method" onchange="updateMethodContext()">
+                <option value="h1">Méthode H1 (Fixe / Légendaire)</option>
+                <option value="h2">Méthode H2 (Sauvage - Émeraude)</option>
+                <option value="h4">Méthode H4 (Sauvage - RS/FRLG)</option>
+            </select>
+
+            <div id="method-options" class="method-context">
+                <div id="h1-options">
+                    <label>Cible Statique</label>
+                    <select id="h1-target">
+                        <option value="Rayquaza">Rayquaza</option>
+                        <option value="Kyogre/Groudon">Kyogre / Groudon</option>
+                        <option value="Starter">Starter</option>
+                    </select>
+                </div>
+                <div id="h2-h4-options" style="display:none;">
+                    <label>Lieu / Route</label>
+                    <select id="area-select">
+                        </select>
+                </div>
+            </div>
+
+            <details style="margin-top:10px; border: 1px solid #444; border-radius: 8px;">
+                <summary style="padding:10px; font-size: 0.85rem; cursor:pointer;">🎭 Filtrer par Natures</summary>
+                <div id="nature-list" class="nature-selector">
+                    </div>
+            </details>
+
+            <div class="options-row">
+                <div class="shiny-box">
+                    <input type="checkbox" id="filter-shiny" style="width:18px; height:18px;">
+                    <label for="filter-shiny" style="margin:0; font-size: 0.85rem;">✨ Shiny</label>
+                </div>
+                <button class="btn" onclick="generateFrames()">RECHERCHER</button>
             </div>
         </div>
+    </details>
 
-        <details>
-            <summary>🎭 Filtrer par Natures</summary>
-            <div id="nature-list" class="nature-selector"></div>
-        </details>
-
-        <div class="options-row">
-            <div class="shiny-box">
-                <input type="checkbox" id="filter-shiny" style="width:20px; height:20px; margin:0;">
-                <label for="filter-shiny" style="margin:0; font-size: 0.85rem;">✨ Shiny</label>
-            </div>
-            <button class="btn" onclick="generateFrames()">RECHERCHER</button>
-        </div>
-    </div>
-
-    <div id="results-area" class="card results-scroll" style="display:none; padding:0;">
-        <table>
+    <div id="results-area" class="results-scroll" style="display:none;">
+        <table id="results-table">
             <thead>
                 <tr>
-                    <th>Frame</th>
+                    <th>Fr</th>
                     <th>Nature</th>
-                    <th>IVs</th>
-                    <th>Pokémon</th>
+                    <th>IVs (PV/A/D/SA/SD/V)</th>
+                    <th>Slot</th>
                 </tr>
             </thead>
             <tbody id="results-body"></tbody>
         </table>
     </div>
 
-    <script src="../app-core.js"></script>
+    <script src="data-natures.js"></script>
+    <script src="data-locations.js"></script>
     <script src="search.js"></script>
 </body>
 </html>
