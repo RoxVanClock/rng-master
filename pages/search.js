@@ -1,7 +1,3 @@
-/**
- * SEARCH ENGINE - PROFILE FIX
- */
-
 window.addEventListener('DOMContentLoaded', () => {
     refreshProfileStatus();
     initNatureList();
@@ -10,38 +6,42 @@ window.addEventListener('DOMContentLoaded', () => {
 function refreshProfileStatus() {
     const banner = document.getElementById('profile-banner');
     
-    // On essaie de lire le profil actif
+    // 1. On cherche la clé directe
     let active = JSON.parse(localStorage.getItem('rng_active_profile'));
 
-    // Si c'est vide, on cherche dans la liste globale des profils
+    // 2. Secours : On cherche dans la liste complète (cas de l'import)
     if (!active) {
         const all = JSON.parse(localStorage.getItem('rng_profiles')) || [];
-        active = all.find(p => p.active === true);
+        active = all.find(p => p.active === true); 
+        if(active) localStorage.setItem('rng_active_profile', JSON.stringify(active));
     }
 
     if (active && active.tid !== undefined) {
-        banner.style.backgroundColor = "rgba(46, 204, 113, 0.1)";
+        banner.style.backgroundColor = "rgba(46, 204, 113, 0.15)";
         banner.style.borderColor = "#2ecc71";
         banner.style.color = "#2ecc71";
-        banner.innerHTML = `<b>✅ Profil : ${active.name}</b><br>TID: ${active.tid} | SID: ${active.sid}`;
+        banner.innerHTML = `<div><b>✅ Profil : ${active.name}</b><br><small style="color:#ccc">TID: ${active.tid} | SID: ${active.sid}</small></div>
+                            <button class="refresh-btn" onclick="refreshProfileStatus()">🔄</button>`;
     } else {
-        banner.style.backgroundColor = "rgba(231, 76, 60, 0.1)";
+        banner.style.backgroundColor = "rgba(231, 76, 60, 0.15)";
         banner.style.borderColor = "#e74c3c";
         banner.style.color = "#e74c3c";
-        banner.innerHTML = `<b>⚠️ Aucun profil sélectionné</b><br>Allez dans Config et cliquez sur votre profil.`;
+        banner.innerHTML = `<div><b>⚠️ Aucun profil détecté</b><br><small style="color:#ccc">Sélectionnez-le dans Config.</small></div>
+                            <button class="refresh-btn" onclick="refreshProfileStatus()">🔄 RÉESSAYER</button>`;
     }
 }
 
 function initNatureList() {
     const container = document.getElementById('nature-list');
     if (!container) return;
-    const unique = [...new Set(DATA_NATURES)];
-    unique.forEach(n => {
-        const div = document.createElement('div');
-        div.className = "nature-row";
-        div.innerHTML = `<span>${n}</span><input type="checkbox" class="nat-check" value="${n}">`;
-        container.appendChild(div);
-    });
+    // On affiche les 24 natures sans doublon pour l'interface
+    const uniqueNatures = [...new Set(DATA_NATURES)];
+    container.innerHTML = uniqueNatures.map(n => `
+        <div class="nature-row">
+            <span>${n}</span>
+            <input type="checkbox" class="nat-check" value="${n}">
+        </div>
+    `).join('');
 }
 
 function lcrng(seed) {
@@ -49,14 +49,8 @@ function lcrng(seed) {
 }
 
 function generateFrames() {
-    // On récupère le profil au moment du clic pour être sûr
-    let active = JSON.parse(localStorage.getItem('rng_active_profile'));
-    if (!active) {
-        const all = JSON.parse(localStorage.getItem('rng_profiles')) || [];
-        active = all.find(p => p.active === true);
-    }
-
-    if (!active) return alert("Veuillez sélectionner un profil dans l'onglet Config.");
+    const active = JSON.parse(localStorage.getItem('rng_active_profile'));
+    if (!active) return alert("Erreur : Aucun profil actif. Cliquez sur le bouton 🔄.");
 
     const start = parseInt(document.getElementById('f-start').value) || 0;
     const end = parseInt(document.getElementById('f-end').value) || 5000;
@@ -66,7 +60,7 @@ function generateFrames() {
     const sid = parseInt(active.sid);
     const tbody = document.getElementById('results-body');
     tbody.innerHTML = "";
-    document.getElementById('results-area').style.display = "block";
+    document.getElementById('results-container').style.display = "block";
 
     let seed = 0n; 
     for (let i = 0; i < start; i++) seed = lcrng(seed);
@@ -84,10 +78,14 @@ function generateFrames() {
         let isShiny = ((tid ^ sid) ^ (p1 ^ p2)) < 8;
         
         const row = document.createElement('tr');
-        if (isShiny) row.style.color = "gold";
-        row.innerHTML = `<td>${f}</td><td>${nature}</td><td>-</td><td>Fixe</td>`;
+        if (isShiny) row.style.backgroundColor = "rgba(255, 215, 0, 0.1)";
+        row.innerHTML = `
+            <td style="${isShiny ? 'color:gold;font-weight:bold;' : ''}">${f}</td>
+            <td>${nature}</td>
+            <td style="color:#666;">-</td>
+            <td>${isShiny ? '✨ SHINY' : 'Normal'}</td>
+        `;
         tbody.appendChild(row);
-        
         seed = lcrng(seed);
     }
 }
